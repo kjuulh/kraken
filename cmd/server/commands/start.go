@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewStartServerCommand(logger *zap.Logger) *cobra.Command {
+func NewStartServerCommand(_ *zap.Logger) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "Start the kraken server",

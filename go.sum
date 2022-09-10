@@ -1,3 +1,7 @@
+git.front.kjuulh.io/kjuulh/curre v0.0.0-20220909233936-421425959197 h1:aOFriK+Ui/Kp0llmPXi3qTQkU6IPvsrRW4jl87TPArQ=
+git.front.kjuulh.io/kjuulh/curre v0.0.0-20220909233936-421425959197/go.mod h1:m7WpSehONLqPh/XF3F0BI0UOpLOfGuDmDEFI1XsM6fE=
+git.front.kjuulh.io/kjuulh/curre v1.0.0 h1:+a+bXcIGalBtnbmEMXjbf8gHrodp9rM5gGsz3EnI++M=
+git.front.kjuulh.io/kjuulh/curre v1.0.0/go.mod h1:m7WpSehONLqPh/XF3F0BI0UOpLOfGuDmDEFI1XsM6fE=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
