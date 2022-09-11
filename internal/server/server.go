@@ -14,6 +14,6 @@ func Start(logger *zap.Logger) error {
 	deps := serverdeps.NewServerDeps(logger)
 
 	return curre.NewManager().
-		Register(NewAeroHttpServer(deps)).
+		Register(NewGinHttpServer(deps)).
 		Run(ctx)
 }

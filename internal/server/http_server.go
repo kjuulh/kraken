@@ -2,16 +2,17 @@ package server
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"git.front.kjuulh.io/kjuulh/curre"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/serverdeps"
-	"github.com/aerogo/aero"
+	"github.com/gin-gonic/gin"
 )
 
 func NewHttpServer(deps *serverdeps.ServerDeps) curre.Component {
 	return curre.NewFunctionalComponent(&curre.FunctionalComponent{
-		StartFunc: func(fc *curre.FunctionalComponent, ctx context.Context) error {
+		StartFunc: func(_ *curre.FunctionalComponent, _ context.Context) error {
 			handler := http.NewServeMux()
 			handler.HandleFunc(
 				"/health/ready",
@@ -28,35 +29,41 @@ func NewHttpServer(deps *serverdeps.ServerDeps) curre.Component {
 	)
 }
 
-func NewAeroHttpServer(deps *serverdeps.ServerDeps) curre.Component {
-	var app *aero.Application
+func NewGinHttpServer(_ *serverdeps.ServerDeps) curre.Component {
+	var app *gin.Engine
+	var server *http.Server
 
 	return curre.NewFunctionalComponent(&curre.FunctionalComponent{
 		InitFunc: func(_ *curre.FunctionalComponent, _ context.Context) error {
-			app = aero.New()
-			app.Config.Ports = aero.PortConfiguration{
-				HTTP:  3000,
-				HTTPS: 3443,
-			}
+			app = gin.Default()
+			app.UseH2C = true
 
-			app.Router().Add(http.MethodGet, "/health/ready", func(ctx aero.Context) error {
-				ctx.JSON(struct {
-					Message string `json:"message"`
-				}{Message: "healthy"})
-				return nil
+			healthRoute := app.Group("/health")
+			healthRoute.GET("/ready", func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{
+					"message": "healthy",
+				})
 			})
+
+			server = &http.Server{
+				Addr:    "127.0.0.1:3000",
+				Handler: app,
+			}
 
 			return nil
 		},
 		StartFunc: func(_ *curre.FunctionalComponent, _ context.Context) error {
-			if app != nil {
-				app.Run()
+			if server != nil {
+				err := server.ListenAndServe()
+				if err != nil && !errors.Is(err, http.ErrServerClosed) {
+					return err
+				}
 			}
 			return nil
 		},
-		StopFunc: func(_ *curre.FunctionalComponent, _ context.Context) error {
-			if app != nil {
-				app.Shutdown()
+		StopFunc: func(_ *curre.FunctionalComponent, ctx context.Context) error {
+			if server != nil {
+				server.Shutdown(ctx)
 			}
 			return nil
 		},
