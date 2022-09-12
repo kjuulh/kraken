@@ -2,16 +2,19 @@
 
 ## POC:
 
-- [ ] Create test action.
-- [ ] List git repositories on git.front.kjuulh.io.
-- [ ] Run action on each repo in list (hard-coded) using ssh and gpg.
-- [ ] Create PR
+- [x] Add cuddle
+- [x] Create storage mechanism
+- [x] Pull repository into storage
+- [x] Create test action to run on repository
+- [x] Sign commit using gpg
+- [x] Push commits to branch
 
 ### Not in scope
 
 - [ ] Pooled runners
 - [ ] CLI with options
 - [ ] Server app
+- [ ] Git hosting providers
 
 ## Version 0.1
 
