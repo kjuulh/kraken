@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"git.front.kjuulh.io/kjuulh/kraken/cmd/server/commands"
+	"git.front.kjuulh.io/kjuulh/kraken/cmd/kraken/commands"
 )
 
 func main() {
@@ -11,7 +11,7 @@ func main() {
 }
 
 func Execute() {
-	err := commands.CreateServerCmd().Execute()
+	err := commands.CreateKrakenCmd().Execute()
 	if err != nil {
 		os.Exit(1)
 	}

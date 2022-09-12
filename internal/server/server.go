@@ -5,6 +5,7 @@ import (
 
 	"git.front.kjuulh.io/kjuulh/curre"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/serverdeps"
+	"git.front.kjuulh.io/kjuulh/kraken/internal/services/signer"
 	"go.uber.org/zap"
 )
 
@@ -14,6 +15,8 @@ func Start(logger *zap.Logger) error {
 	deps := serverdeps.NewServerDeps(logger)
 
 	return curre.NewManager().
-		Register(NewGinHttpServer(deps)).
+		Register(NewGinHttpServer(logger.With(zap.Namespace("ginHttpServer")), deps)).
+		Register(NewStorageServer(logger.With(zap.Namespace("storageServer")), deps)).
+		Register(signer.NewOpenPGPApp(deps.GetOpenPGP())).
 		Run(ctx)
 }
