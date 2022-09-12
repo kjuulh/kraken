@@ -2,7 +2,7 @@
 
 ## POC:
 
-- [ ] Add cuddle
+- [x] Add cuddle
 - [x] Create storage mechanism
 - [x] Pull repository into storage
 - [x] Create test action to run on repository
