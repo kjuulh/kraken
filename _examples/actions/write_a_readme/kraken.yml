@@ -3,8 +3,8 @@ name: write-a-readme
 select:
   repositories:
     - git@git.front.kjuulh.io:kjuulh/kraken-test.git
-  provider:
+  providers:
     - gitea: git.front.kjuulh.io/kraken
       organisation: "kraken"
-action:
-  command: go run main.go
+actions:
+  - "go run main.go"

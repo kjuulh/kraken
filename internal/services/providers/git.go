@@ -70,7 +70,7 @@ func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl stri
 		Auth:              auth,
 		RemoteName:        "origin",
 		ReferenceName:     "refs/heads/main",
-		SingleBranch:      true,
+		SingleBranch:      false,
 		NoCheckout:        false,
 		Depth:             1,
 		RecurseSubmodules: 1,
@@ -88,6 +88,21 @@ func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl stri
 	g.logger.Debug("done cloning repo")
 
 	return &GitRepo{repo: repo}, nil
+}
+
+func (g *Git) Checkout(ctx context.Context, gitRepo *GitRepo, branch string) error {
+	wt, err := gitRepo.repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	return wt.Checkout(&git.CheckoutOptions{
+		Hash:   [20]byte{},
+		Branch: plumbing.NewBranchReferenceName(branch),
+		Create: false,
+		Force:  false,
+		Keep:   false,
+	})
 }
 
 func (g *Git) getProgressWriter() *zapio.Writer {

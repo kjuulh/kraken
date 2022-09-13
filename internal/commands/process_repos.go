@@ -3,14 +3,10 @@ package commands
 import (
 	"context"
 	"fmt"
-	"io/fs"
-	"os"
-	"path"
-	"path/filepath"
 	"sync"
 	"time"
 
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/actions"
+	"git.front.kjuulh.io/kjuulh/kraken/internal/actions"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/services/providers"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
 	"go.uber.org/zap"
@@ -18,30 +14,41 @@ import (
 
 type (
 	ProcessRepos struct {
-		logger  *zap.Logger
-		storage *storage.Service
-		git     *providers.Git
-		action  *actions.Action
+		logger        *zap.Logger
+		storage       *storage.Service
+		git           *providers.Git
+		actionCreator *actions.ActionCreator
 	}
 
 	ProcessReposDeps interface {
 		GetStorageService() *storage.Service
 		GetGitProvider() *providers.Git
-		GetAction() *actions.Action
+		GetActionCreator() *actions.ActionCreator
 	}
 )
 
 func NewProcessRepos(logger *zap.Logger, deps ProcessReposDeps) *ProcessRepos {
 	return &ProcessRepos{
-		logger:  logger,
-		storage: deps.GetStorageService(),
-		git:     deps.GetGitProvider(),
-		action:  deps.GetAction(),
+		logger:        logger,
+		storage:       deps.GetStorageService(),
+		git:           deps.GetGitProvider(),
+		actionCreator: deps.GetActionCreator(),
 	}
 }
 
-func (pr *ProcessRepos) Process(ctx context.Context, repositoryUrls []string) error {
+func (pr *ProcessRepos) Process(ctx context.Context, repository string, branch string, actionPath string) error {
 	errChan := make(chan error, 1)
+
+	action, err := pr.actionCreator.Prepare(ctx, &actions.ActionCreatorOps{
+		RepositoryUrl: repository,
+		Branch:        branch,
+		Path:          actionPath,
+	})
+	if err != nil {
+		return err
+	}
+
+	repositoryUrls := make([]string, 0)
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(repositoryUrls))
@@ -51,7 +58,11 @@ func (pr *ProcessRepos) Process(ctx context.Context, repositoryUrls []string) er
 			defer func() {
 				wg.Done()
 			}()
-			pr.processRepo(ctx, repoUrl, errChan)
+			err := pr.processRepo(ctx, repoUrl, action)
+			if err != nil {
+				pr.logger.Error("could not process repo", zap.Error(err))
+				errChan <- err
+			}
 		}(ctx, repoUrl)
 	}
 
@@ -66,74 +77,39 @@ func (pr *ProcessRepos) Process(ctx context.Context, repositoryUrls []string) er
 	return nil
 }
 
-func (pr *ProcessRepos) processRepo(ctx context.Context, repoUrl string, errChan chan error) {
+func (pr *ProcessRepos) processRepo(ctx context.Context, repoUrl string, action *actions.Action) error {
 	cleanup, area, err := pr.prepareAction(ctx)
 	defer func() {
 		if cleanup != nil {
-			cleanup(ctx, errChan)
+			cleanup(ctx)
 		}
 	}()
 	if err != nil {
-		errChan <- err
-		return
+		return err
 	}
 
 	repo, err := pr.clone(ctx, area, repoUrl)
 	if err != nil {
-		errChan <- err
-		return
+		return err
 	}
 
-	err = pr.action.Run(
-		ctx,
-		area,
-		func(_ context.Context, area *storage.Area) (bool, error) {
-			pr.logger.Debug("checking predicate", zap.String("area", area.Path))
-
-			// TODO: Run predicate instead
-			contains := false
-			filepath.WalkDir(area.Path, func(_ string, d fs.DirEntry, _ error) error {
-				if d.Name() == "roadmap.md" {
-					contains = true
-				}
-				return nil
-			})
-			return contains, nil
-		},
-		func(_ context.Context, area *storage.Area) error {
-			pr.logger.Debug("running action", zap.String("area", area.Path))
-
-			// TODO: Run action instead
-			readme := path.Join(area.Path, "README.md")
-			file, err := os.Create(readme)
-			if err != nil {
-				return fmt.Errorf("could not create readme: %w", err)
-			}
-
-			_, err = file.WriteString("# Readme")
-			if err != nil {
-				return fmt.Errorf("could not write readme: %w", err)
-			}
-
-			err = pr.commit(ctx, area, repo)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		}, false)
+	err = action.Execute(ctx, area)
 	if err != nil {
-		pr.logger.Error("could not run action", zap.Error(err))
-		errChan <- err
-		return
+		return err
+	}
+
+	err = pr.commit(ctx, area, repo)
+	if err != nil {
+		return err
 	}
 
 	pr.logger.Debug("processing done", zap.String("path", area.Path), zap.String("repoUrl", repoUrl))
+	return nil
 }
 
 func (pr *ProcessRepos) prepareAction(
 	ctx context.Context,
-) (func(ctx context.Context, errChan chan error), *storage.Area, error) {
+) (func(ctx context.Context), *storage.Area, error) {
 	pr.logger.Debug("Creating area")
 	area, err := pr.storage.CreateArea(ctx)
 	if err != nil {
@@ -141,12 +117,11 @@ func (pr *ProcessRepos) prepareAction(
 		return nil, nil, err
 	}
 
-	cleanupfunc := func(ctx context.Context, errChan chan error) {
+	cleanupfunc := func(ctx context.Context) {
 		pr.logger.Debug("Removing area", zap.String("path", area.Path))
 		err = pr.storage.RemoveArea(ctx, area)
 		if err != nil {
-			errChan <- err
-			return
+			panic(err)
 		}
 	}
 

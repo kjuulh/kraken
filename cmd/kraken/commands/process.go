@@ -17,9 +17,14 @@ func CreateKrakenProcessCmd() *cobra.Command {
 			var buf bytes.Buffer
 			err := json.NewEncoder(&buf).
 				Encode(struct {
-					RepositoryUrls []string `json:"repositoryUrls"`
+					Repository string `json:"repository"`
+					Branch     string `json:"branch"`
+					Path       string `json:"path"`
 				}{
-					RepositoryUrls: []string{"git@git.front.kjuulh.io:kjuulh/kraken.git"}})
+					Repository: "git@git.front.kjuulh.io:kjuulh/kraken.git",
+					Branch:     "v0.1",
+					Path:       "_examples/actions/write_a_readme/kraken.yml",
+				})
 			if err != nil {
 				panic(err)
 			}
