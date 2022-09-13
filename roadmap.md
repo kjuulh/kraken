@@ -20,6 +20,7 @@
 
 - [ ] Setup a way to choose actions and predicates
 - [ ] Allow instantiation of actions, kraken template repo etc.
+- [ ] Create pr for gitea provider
 - [ ] Think about some sort of isolation
 - [ ] Create CLI to trigger action
 - [ ] Setup pool of runners
