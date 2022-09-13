@@ -1,0 +1,8 @@
+apiVersion: kraken.front.kjuulh.io/schema/v1
+name: write-a-readme
+repositories:
+  - git@git.front.kjuulh.io:kjuulh/kraken-test.git
+predicates:
+  - predicate.go
+actions:
+  - action.go
