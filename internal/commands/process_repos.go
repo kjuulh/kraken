@@ -41,102 +41,17 @@ func NewProcessRepos(logger *zap.Logger, deps ProcessReposDeps) *ProcessRepos {
 }
 
 func (pr *ProcessRepos) Process(ctx context.Context, repositoryUrls []string) error {
-	// Clone repos
+	errChan := make(chan error, 1)
+
 	wg := sync.WaitGroup{}
 	wg.Add(len(repositoryUrls))
-	errChan := make(chan error, 1)
 
 	for _, repoUrl := range repositoryUrls {
 		go func(ctx context.Context, repoUrl string) {
 			defer func() {
 				wg.Done()
 			}()
-			pr.logger.Debug("Creating area", zap.String("repoUrl", repoUrl))
-			area, err := pr.storage.CreateArea(ctx)
-			if err != nil {
-				pr.logger.Error("failed to allocate area", zap.Error(err))
-				errChan <- err
-				return
-			}
-
-			defer func(ctx context.Context) {
-				pr.logger.Debug("Removing area", zap.String("path", area.Path), zap.String("repoUrl", repoUrl))
-				err = pr.storage.RemoveArea(ctx, area)
-				if err != nil {
-					errChan <- err
-					return
-				}
-
-			}(ctx)
-
-			pr.logger.Debug("Cloning repo", zap.String("path", area.Path), zap.String("repoUrl", repoUrl))
-			cloneCtx, _ := context.WithTimeout(ctx, time.Second*5)
-			repo, err := pr.git.Clone(cloneCtx, area, repoUrl)
-			if err != nil {
-				pr.logger.Error("could not clone repo", zap.Error(err))
-				errChan <- err
-				return
-			}
-
-			err = pr.git.CreateBranch(ctx, repo)
-			if err != nil {
-				pr.logger.Error("could not create branch", zap.Error(err))
-				errChan <- err
-				return
-			}
-
-			err = pr.action.Run(
-				ctx,
-				area,
-				func(_ context.Context, area *storage.Area) (bool, error) {
-					pr.logger.Debug("checking predicate", zap.String("area", area.Path))
-					contains := false
-					filepath.WalkDir(area.Path, func(path string, d fs.DirEntry, err error) error {
-						if d.Name() == "roadmap.md" {
-							contains = true
-						}
-						return nil
-					})
-					return contains, nil
-				},
-				func(_ context.Context, area *storage.Area) error {
-					pr.logger.Debug("running action", zap.String("area", area.Path))
-					readme := path.Join(area.Path, "README.md")
-					file, err := os.Create(readme)
-					if err != nil {
-						return fmt.Errorf("could not create readme: %w", err)
-					}
-					_, err = file.WriteString("# Readme")
-					if err != nil {
-						return fmt.Errorf("could not write readme: %w", err)
-					}
-
-					_, err = pr.git.Add(ctx, area, repo)
-					if err != nil {
-						return fmt.Errorf("could not add file: %w", err)
-					}
-
-					err = pr.git.Commit(ctx, repo)
-					if err != nil {
-						return fmt.Errorf("could not get diff: %w", err)
-					}
-
-					return nil
-				}, false)
-			if err != nil {
-				pr.logger.Error("could not run action", zap.Error(err))
-				errChan <- err
-				return
-			}
-
-			err = pr.git.Push(ctx, repo)
-			if err != nil {
-				pr.logger.Error("could not push to repo", zap.Error(err))
-				errChan <- err
-				return
-			}
-
-			pr.logger.Debug("processing done", zap.String("path", area.Path), zap.String("repoUrl", repoUrl))
+			pr.processRepo(ctx, repoUrl, errChan)
 		}(ctx, repoUrl)
 	}
 
@@ -148,5 +63,128 @@ func (pr *ProcessRepos) Process(ctx context.Context, repositoryUrls []string) er
 		return err
 	}
 
+	return nil
+}
+
+func (pr *ProcessRepos) processRepo(ctx context.Context, repoUrl string, errChan chan error) {
+	cleanup, area, err := pr.prepareAction(ctx)
+	defer func() {
+		if cleanup != nil {
+			cleanup(ctx, errChan)
+		}
+	}()
+	if err != nil {
+		errChan <- err
+		return
+	}
+
+	repo, err := pr.clone(ctx, area, repoUrl)
+	if err != nil {
+		errChan <- err
+		return
+	}
+
+	err = pr.action.Run(
+		ctx,
+		area,
+		func(_ context.Context, area *storage.Area) (bool, error) {
+			pr.logger.Debug("checking predicate", zap.String("area", area.Path))
+
+			// TODO: Run predicate instead
+			contains := false
+			filepath.WalkDir(area.Path, func(_ string, d fs.DirEntry, _ error) error {
+				if d.Name() == "roadmap.md" {
+					contains = true
+				}
+				return nil
+			})
+			return contains, nil
+		},
+		func(_ context.Context, area *storage.Area) error {
+			pr.logger.Debug("running action", zap.String("area", area.Path))
+
+			// TODO: Run action instead
+			readme := path.Join(area.Path, "README.md")
+			file, err := os.Create(readme)
+			if err != nil {
+				return fmt.Errorf("could not create readme: %w", err)
+			}
+
+			_, err = file.WriteString("# Readme")
+			if err != nil {
+				return fmt.Errorf("could not write readme: %w", err)
+			}
+
+			err = pr.commit(ctx, area, repo)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}, false)
+	if err != nil {
+		pr.logger.Error("could not run action", zap.Error(err))
+		errChan <- err
+		return
+	}
+
+	pr.logger.Debug("processing done", zap.String("path", area.Path), zap.String("repoUrl", repoUrl))
+}
+
+func (pr *ProcessRepos) prepareAction(
+	ctx context.Context,
+) (func(ctx context.Context, errChan chan error), *storage.Area, error) {
+	pr.logger.Debug("Creating area")
+	area, err := pr.storage.CreateArea(ctx)
+	if err != nil {
+		pr.logger.Error("failed to allocate area", zap.Error(err))
+		return nil, nil, err
+	}
+
+	cleanupfunc := func(ctx context.Context, errChan chan error) {
+		pr.logger.Debug("Removing area", zap.String("path", area.Path))
+		err = pr.storage.RemoveArea(ctx, area)
+		if err != nil {
+			errChan <- err
+			return
+		}
+	}
+
+	return cleanupfunc, area, nil
+}
+
+func (pr *ProcessRepos) clone(ctx context.Context, area *storage.Area, repoUrl string) (*providers.GitRepo, error) {
+	pr.logger.Debug("Cloning repo", zap.String("path", area.Path), zap.String("repoUrl", repoUrl))
+	cloneCtx, _ := context.WithTimeout(ctx, time.Second*5)
+	repo, err := pr.git.Clone(cloneCtx, area, repoUrl)
+	if err != nil {
+		pr.logger.Error("could not clone repo", zap.Error(err))
+		return nil, err
+	}
+
+	err = pr.git.CreateBranch(ctx, repo)
+	if err != nil {
+		pr.logger.Error("could not create branch", zap.Error(err))
+		return nil, err
+	}
+
+	return repo, nil
+}
+
+func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *providers.GitRepo) error {
+	_, err := pr.git.Add(ctx, area, repo)
+	if err != nil {
+		return fmt.Errorf("could not add file: %w", err)
+	}
+
+	err = pr.git.Commit(ctx, repo)
+	if err != nil {
+		return fmt.Errorf("could not get diff: %w", err)
+	}
+
+	err = pr.git.Push(ctx, repo)
+	if err != nil {
+		return fmt.Errorf("could not push to repo: %w", err)
+	}
 	return nil
 }

@@ -30,3 +30,6 @@
 ## Version 1.0
 
 - [ ] Write README
+- [ ] Make configurable ssh user
+- [ ] Make configurable gpg keyset
+- [ ] Make configurable git provider
