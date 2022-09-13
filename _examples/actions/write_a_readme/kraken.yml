@@ -6,3 +6,5 @@ select:
   provider:
     - gitea: git.front.kjuulh.io/kraken
       organisation: "kraken"
+action:
+  command: go run main.go
