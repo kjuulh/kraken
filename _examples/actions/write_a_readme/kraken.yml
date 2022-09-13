@@ -1,8 +1,8 @@
-apiVersion: kraken.front.kjuulh.io/schema/v1
+apiVersion: git.front.kjuulh.io/kjuulh/kraken/blob/main/schema/v1
 name: write-a-readme
-repositories:
-  - git@git.front.kjuulh.io:kjuulh/kraken-test.git
-predicates:
-  - predicate.go
-actions:
-  - action.go
+select:
+  repositories:
+    - git@git.front.kjuulh.io:kjuulh/kraken-test.git
+  provider:
+    - gitea: git.front.kjuulh.io/kraken
+      organisation: "kraken"
