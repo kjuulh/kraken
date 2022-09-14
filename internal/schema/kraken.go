@@ -12,7 +12,10 @@ type KrakenSchema struct {
 			Organisation string `yaml:"organisation"`
 		} `yaml:"providers"`
 	} `yaml:"select"`
-	Actions []string `yaml:"actions"`
+	Actions []struct {
+		Type  string `yaml:"type"`
+		Entry string `yaml:"entry"`
+	} `yaml:"actions"`
 }
 
 func Unmarshal(raw string) (*KrakenSchema, error) {

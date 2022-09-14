@@ -47,15 +47,10 @@ func (ac *ActionCreator) Prepare(ctx context.Context, ops *ActionCreatorOps) (*A
 		return nil, err
 	}
 
-	cloneCtx, _ := context.WithTimeout(ctx, time.Second*5)
-	repo, err := ac.git.Clone(cloneCtx, area, ops.RepositoryUrl)
+	cloneCtx, _ := context.WithTimeout(ctx, time.Second*10)
+	_, err = ac.git.CloneBranch(cloneCtx, area, ops.RepositoryUrl, ops.Branch)
 	if err != nil {
 		ac.logger.Error("could not clone repo", zap.Error(err))
-		return nil, err
-	}
-
-	err = ac.git.Checkout(ctx, repo, ops.Branch)
-	if err != nil {
 		return nil, err
 	}
 
@@ -74,8 +69,10 @@ func (ac *ActionCreator) Prepare(ctx context.Context, ops *ActionCreatorOps) (*A
 		return nil, err
 	}
 
+	ac.logger.Debug("Action creator done")
 	return &Action{
-		Schema: krakenSchema,
+		Schema:     krakenSchema,
+		SchemaPath: executorUrl,
 	}, nil
 }
 

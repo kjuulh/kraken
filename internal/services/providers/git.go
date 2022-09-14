@@ -53,7 +53,7 @@ func NewGit(logger *zap.Logger, gitConfig *GitConfig, openPGP *signer.OpenPGP) *
 	return &Git{logger: logger, gitConfig: gitConfig, openPGP: openPGP}
 }
 
-func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl string) (*GitRepo, error) {
+func (g *Git) CloneBranch(ctx context.Context, storageArea *storage.Area, repoUrl string, branch string) (*GitRepo, error) {
 	g.logger.Debug(
 		"cloning repository",
 		zap.String("repoUrl", repoUrl),
@@ -69,8 +69,8 @@ func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl stri
 		URL:               repoUrl,
 		Auth:              auth,
 		RemoteName:        "origin",
-		ReferenceName:     "refs/heads/main",
-		SingleBranch:      false,
+		ReferenceName:     plumbing.NewBranchReferenceName(branch),
+		SingleBranch:      true,
 		NoCheckout:        false,
 		Depth:             1,
 		RecurseSubmodules: 1,
@@ -90,19 +90,41 @@ func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl stri
 	return &GitRepo{repo: repo}, nil
 }
 
-func (g *Git) Checkout(ctx context.Context, gitRepo *GitRepo, branch string) error {
-	wt, err := gitRepo.repo.Worktree()
+func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl string) (*GitRepo, error) {
+	g.logger.Debug(
+		"cloning repository",
+		zap.String("repoUrl", repoUrl),
+		zap.String("path", storageArea.Path),
+	)
+
+	auth, err := g.GetAuth()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return wt.Checkout(&git.CheckoutOptions{
-		Hash:   [20]byte{},
-		Branch: plumbing.NewBranchReferenceName(branch),
-		Create: false,
-		Force:  false,
-		Keep:   false,
-	})
+	cloneOptions := git.CloneOptions{
+		URL:               repoUrl,
+		Auth:              auth,
+		RemoteName:        "origin",
+		ReferenceName:     "refs/heads/main",
+		SingleBranch:      true,
+		NoCheckout:        false,
+		Depth:             1,
+		RecurseSubmodules: 1,
+		Progress:          g.getProgressWriter(),
+		Tags:              0,
+		InsecureSkipTLS:   false,
+		CABundle:          []byte{},
+	}
+
+	repo, err := git.PlainCloneContext(ctx, storageArea.Path, false, &cloneOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	g.logger.Debug("done cloning repo")
+
+	return &GitRepo{repo: repo}, nil
 }
 
 func (g *Git) getProgressWriter() *zapio.Writer {

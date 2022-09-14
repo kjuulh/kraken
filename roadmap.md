@@ -11,15 +11,15 @@
 
 ### Not in scope
 
-- [ ] Pooled runners
-- [ ] CLI with options
-- [ ] Server app
-- [ ] Git hosting providers
+- Pooled runners
+- CLI with options
+- Server app
+- Git hosting providers
 
 ## Version 0.1
 
-- [ ] Setup a way to choose actions and predicates
-- [ ] Allow instantiation of actions, kraken template repo etc.
+- [x] Setup a way to choose actions and predicates
+- [x] Allow instantiation of actions, kraken template repo etc.
 - [ ] Create pr for gitea provider
 - [ ] Think about some sort of isolation
 - [ ] Create CLI to trigger action

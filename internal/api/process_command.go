@@ -34,6 +34,9 @@ func CommandRoute(logger *zap.Logger, app *gin.Engine, deps *serverdeps.ServerDe
 			ctx := context.WithValue(context.Background(), jobs.JobId{}, jobId)
 			processRepos := commands.NewProcessRepos(logger, deps)
 			err = processRepos.Process(ctx, repository, branch, path)
+			if err != nil {
+				logger.Error("could not process repo", zap.Error(err))
+			}
 		}(request.Repository, request.Branch, request.Path, jobId)
 
 		c.Status(http.StatusAccepted)

@@ -15,6 +15,8 @@ func main() {
 	}
 	_ = logger.Sync()
 
+	zap.ReplaceGlobals(logger)
+
 	Execute(logger)
 }
 

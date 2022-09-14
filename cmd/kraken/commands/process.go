@@ -11,7 +11,7 @@ import (
 func CreateKrakenProcessCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "process",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			client := http.Client{}
 
 			var buf bytes.Buffer
@@ -22,8 +22,8 @@ func CreateKrakenProcessCmd() *cobra.Command {
 					Path       string `json:"path"`
 				}{
 					Repository: "git@git.front.kjuulh.io:kjuulh/kraken.git",
-					Branch:     "v0.1",
-					Path:       "_examples/actions/write_a_readme/kraken.yml",
+					Branch:     "feature/add-actions",
+					Path:       "_examples/actions/write_a_readme/",
 				})
 			if err != nil {
 				panic(err)

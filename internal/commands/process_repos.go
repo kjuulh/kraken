@@ -48,7 +48,7 @@ func (pr *ProcessRepos) Process(ctx context.Context, repository string, branch s
 		return err
 	}
 
-	repositoryUrls := make([]string, 0)
+	repositoryUrls := action.Schema.Select.Repositories
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(repositoryUrls))
@@ -60,7 +60,6 @@ func (pr *ProcessRepos) Process(ctx context.Context, repository string, branch s
 			}()
 			err := pr.processRepo(ctx, repoUrl, action)
 			if err != nil {
-				pr.logger.Error("could not process repo", zap.Error(err))
 				errChan <- err
 			}
 		}(ctx, repoUrl)
@@ -113,7 +112,6 @@ func (pr *ProcessRepos) prepareAction(
 	pr.logger.Debug("Creating area")
 	area, err := pr.storage.CreateArea(ctx)
 	if err != nil {
-		pr.logger.Error("failed to allocate area", zap.Error(err))
 		return nil, nil, err
 	}
 
@@ -133,13 +131,11 @@ func (pr *ProcessRepos) clone(ctx context.Context, area *storage.Area, repoUrl s
 	cloneCtx, _ := context.WithTimeout(ctx, time.Second*5)
 	repo, err := pr.git.Clone(cloneCtx, area, repoUrl)
 	if err != nil {
-		pr.logger.Error("could not clone repo", zap.Error(err))
 		return nil, err
 	}
 
 	err = pr.git.CreateBranch(ctx, repo)
 	if err != nil {
-		pr.logger.Error("could not create branch", zap.Error(err))
 		return nil, err
 	}
 
@@ -157,9 +153,12 @@ func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *pr
 		return fmt.Errorf("could not get diff: %w", err)
 	}
 
-	err = pr.git.Push(ctx, repo)
-	if err != nil {
-		return fmt.Errorf("could not push to repo: %w", err)
+	dryrun := true
+	if !dryrun {
+		err = pr.git.Push(ctx, repo)
+		if err != nil {
+			return fmt.Errorf("could not push to repo: %w", err)
+		}
 	}
 	return nil
 }
