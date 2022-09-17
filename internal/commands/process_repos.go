@@ -3,12 +3,16 @@ package commands
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"git.front.kjuulh.io/kjuulh/kraken/internal/actions"
+	"git.front.kjuulh.io/kjuulh/kraken/internal/gitproviders"
+	"git.front.kjuulh.io/kjuulh/kraken/internal/schema"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/services/providers"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
+	giturls "github.com/whilp/git-urls"
 	"go.uber.org/zap"
 )
 
@@ -18,12 +22,14 @@ type (
 		storage       *storage.Service
 		git           *providers.Git
 		actionCreator *actions.ActionCreator
+		gitea         *gitproviders.Gitea
 	}
 
 	ProcessReposDeps interface {
 		GetStorageService() *storage.Service
 		GetGitProvider() *providers.Git
 		GetActionCreator() *actions.ActionCreator
+		GetGitea() *gitproviders.Gitea
 	}
 )
 
@@ -33,12 +39,11 @@ func NewProcessRepos(logger *zap.Logger, deps ProcessReposDeps) *ProcessRepos {
 		storage:       deps.GetStorageService(),
 		git:           deps.GetGitProvider(),
 		actionCreator: deps.GetActionCreator(),
+		gitea:         deps.GetGitea(),
 	}
 }
 
 func (pr *ProcessRepos) Process(ctx context.Context, repository string, branch string, actionPath string) error {
-	errChan := make(chan error, 1)
-
 	action, err := pr.actionCreator.Prepare(ctx, &actions.ActionCreatorOps{
 		RepositoryUrl: repository,
 		Branch:        branch,
@@ -48,7 +53,10 @@ func (pr *ProcessRepos) Process(ctx context.Context, repository string, branch s
 		return err
 	}
 
-	repositoryUrls := action.Schema.Select.Repositories
+	repositoryUrls, err := pr.getRepoUrls(ctx, action.Schema)
+	if err != nil {
+		return err
+	}
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(repositoryUrls))
@@ -60,20 +68,32 @@ func (pr *ProcessRepos) Process(ctx context.Context, repository string, branch s
 			}()
 			err := pr.processRepo(ctx, repoUrl, action)
 			if err != nil {
-				errChan <- err
+				pr.logger.Error("could not process repo", zap.Error(err))
 			}
 		}(ctx, repoUrl)
 	}
 
 	wg.Wait()
-	close(errChan)
-	pr.logger.Debug("finished processing all repos")
-
-	for err := range errChan {
-		return err
-	}
+	pr.logger.Debug("finished processing all repos", zap.Strings("repos", repositoryUrls))
 
 	return nil
+}
+
+func (pr *ProcessRepos) getRepoUrls(ctx context.Context, schema *schema.KrakenSchema) ([]string, error) {
+	repoUrls := make([]string, 0)
+
+	repoUrls = append(repoUrls, schema.Select.Repositories...)
+
+	for _, provider := range schema.Select.Providers {
+		repos, err := pr.gitea.ListRepositoriesForOrganization(ctx, provider.Gitea, provider.Organisation)
+		if err != nil {
+			return nil, err
+		}
+
+		repoUrls = append(repoUrls, repos...)
+	}
+
+	return repoUrls, nil
 }
 
 func (pr *ProcessRepos) processRepo(ctx context.Context, repoUrl string, action *actions.Action) error {
@@ -97,7 +117,7 @@ func (pr *ProcessRepos) processRepo(ctx context.Context, repoUrl string, action 
 		return err
 	}
 
-	err = pr.commit(ctx, area, repo)
+	err = pr.commit(ctx, area, repo, repoUrl)
 	if err != nil {
 		return err
 	}
@@ -142,8 +162,8 @@ func (pr *ProcessRepos) clone(ctx context.Context, area *storage.Area, repoUrl s
 	return repo, nil
 }
 
-func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *providers.GitRepo) error {
-	_, err := pr.git.Add(ctx, area, repo)
+func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *providers.GitRepo, repoUrl string) error {
+	wt, err := pr.git.Add(ctx, area, repo)
 	if err != nil {
 		return fmt.Errorf("could not add file: %w", err)
 	}
@@ -153,11 +173,51 @@ func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *pr
 		return fmt.Errorf("could not get diff: %w", err)
 	}
 
-	dryrun := true
+	dryrun := false
 	if !dryrun {
+		status, err := wt.Status()
+		if err != nil {
+			return err
+		}
+
+		if status.IsClean() {
+			pr.logger.Info("Returning early, as no modifications are detected")
+			return nil
+		}
+
 		err = pr.git.Push(ctx, repo)
 		if err != nil {
 			return fmt.Errorf("could not push to repo: %w", err)
+		}
+
+		url, err := giturls.Parse(repoUrl)
+		if err != nil {
+			return err
+		}
+
+		head, err := repo.GetHEAD()
+		if err != nil {
+			return err
+		}
+
+		path := strings.Split(url.Path, "/")
+		pr.logger.Debug("path string", zap.Strings("paths", path), zap.String("HEAD", head))
+
+		org := path[0]
+		repoName := path[1]
+		semanticName, _, ok := strings.Cut(repoName, ".")
+		if !ok {
+			semanticName = repoName
+		}
+
+		originHead, err := pr.git.GetOriginHEADForRepo(ctx, repo)
+		if err != nil {
+			return err
+		}
+
+		err = pr.gitea.CreatePr(ctx, fmt.Sprintf("%s://%s", "https", url.Host), org, semanticName, head, originHead, "kraken-apply")
+		if err != nil {
+			return err
 		}
 	}
 	return nil

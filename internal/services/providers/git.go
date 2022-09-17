@@ -30,6 +30,15 @@ type GitRepo struct {
 	repo *git.Repository
 }
 
+func (gr *GitRepo) GetHEAD() (string, error) {
+	head, err := gr.repo.Head()
+	if err != nil {
+		return "", err
+	}
+
+	return head.Name().Short(), nil
+}
+
 type GitAuth string
 
 const (
@@ -51,6 +60,34 @@ type GitConfig struct {
 
 func NewGit(logger *zap.Logger, gitConfig *GitConfig, openPGP *signer.OpenPGP) *Git {
 	return &Git{logger: logger, gitConfig: gitConfig, openPGP: openPGP}
+}
+
+func (g *Git) GetOriginHEADForRepo(ctx context.Context, gitRepo *GitRepo) (string, error) {
+	remote, err := gitRepo.repo.Remote("origin")
+	if err != nil {
+		return "", err
+	}
+
+	auth, err := g.GetAuth()
+	if err != nil {
+		return "", err
+	}
+
+	refs, err := remote.ListContext(ctx, &git.ListOptions{
+		Auth: auth,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	headRef := ""
+	for _, ref := range refs {
+		if !ref.Name().IsBranch() {
+			headRef = ref.Target().Short()
+		}
+	}
+
+	return headRef, nil
 }
 
 func (g *Git) CloneBranch(ctx context.Context, storageArea *storage.Area, repoUrl string, branch string) (*GitRepo, error) {

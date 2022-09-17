@@ -2,6 +2,7 @@ package serverdeps
 
 import (
 	actionc "git.front.kjuulh.io/kjuulh/kraken/internal/actions"
+	"git.front.kjuulh.io/kjuulh/kraken/internal/gitproviders"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/services/actions"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/services/providers"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/services/signer"
@@ -62,6 +63,10 @@ func (deps *ServerDeps) GetAction() *actions.Action {
 
 func (deps *ServerDeps) GetActionCreator() *actionc.ActionCreator {
 	return actionc.NewActionCreator(deps.logger.With(zap.Namespace("action")), deps)
+}
+
+func (deps *ServerDeps) GetGitea() *gitproviders.Gitea {
+	return gitproviders.NewGitea(deps.logger.With(zap.Namespace("gitea")))
 }
 
 func (deps *ServerDeps) GetOpenPGP() *signer.OpenPGP {

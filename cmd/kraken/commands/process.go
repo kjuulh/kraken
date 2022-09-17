@@ -22,7 +22,7 @@ func CreateKrakenProcessCmd() *cobra.Command {
 					Path       string `json:"path"`
 				}{
 					Repository: "git@git.front.kjuulh.io:kjuulh/kraken.git",
-					Branch:     "feature/add-actions",
+					Branch:     "feature/gitea-integration",
 					Path:       "_examples/actions/write_a_readme/",
 				})
 			if err != nil {
