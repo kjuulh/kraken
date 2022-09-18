@@ -168,6 +168,16 @@ func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *pr
 		return fmt.Errorf("could not add file: %w", err)
 	}
 
+	status, err := wt.Status()
+	if err != nil {
+		return err
+	}
+
+	if status.IsClean() {
+		pr.logger.Info("Returning early, as no modifications are detected")
+		return nil
+	}
+
 	err = pr.git.Commit(ctx, repo)
 	if err != nil {
 		return fmt.Errorf("could not get diff: %w", err)
@@ -175,15 +185,6 @@ func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *pr
 
 	dryrun := false
 	if !dryrun {
-		status, err := wt.Status()
-		if err != nil {
-			return err
-		}
-
-		if status.IsClean() {
-			pr.logger.Info("Returning early, as no modifications are detected")
-			return nil
-		}
 
 		err = pr.git.Push(ctx, repo)
 		if err != nil {

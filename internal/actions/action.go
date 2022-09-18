@@ -30,6 +30,18 @@ func (a *Action) Execute(ctx context.Context, area *storage.Area) error {
 
 			zap.L().Debug("Execution done")
 
+		case "docker-build":
+			zap.L().Debug("Building docker-build")
+			runCmd, err := builders.NewDockerBuild(zap.L()).Build(ctx, a.SchemaPath, action.Entry)
+			if err != nil {
+				return err
+			}
+			err = runCmd(ctx, area.Path)
+			if err != nil {
+				return err
+			}
+			return nil
+
 		default:
 			return errors.New("could not determine action type")
 		}

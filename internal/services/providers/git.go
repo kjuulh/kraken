@@ -2,6 +2,7 @@ package providers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -63,12 +64,12 @@ func NewGit(logger *zap.Logger, gitConfig *GitConfig, openPGP *signer.OpenPGP) *
 }
 
 func (g *Git) GetOriginHEADForRepo(ctx context.Context, gitRepo *GitRepo) (string, error) {
-	remote, err := gitRepo.repo.Remote("origin")
+	auth, err := g.GetAuth()
 	if err != nil {
 		return "", err
 	}
 
-	auth, err := g.GetAuth()
+	remote, err := gitRepo.repo.Remote("origin")
 	if err != nil {
 		return "", err
 	}
@@ -82,9 +83,14 @@ func (g *Git) GetOriginHEADForRepo(ctx context.Context, gitRepo *GitRepo) (strin
 
 	headRef := ""
 	for _, ref := range refs {
+		//g.logger.Debug(ref.String())
 		if !ref.Name().IsBranch() {
 			headRef = ref.Target().Short()
 		}
+	}
+
+	if headRef == "" {
+		return "", errors.New("no upstream HEAD branch could be found")
 	}
 
 	return headRef, nil
@@ -107,7 +113,7 @@ func (g *Git) CloneBranch(ctx context.Context, storageArea *storage.Area, repoUr
 		Auth:              auth,
 		RemoteName:        "origin",
 		ReferenceName:     plumbing.NewBranchReferenceName(branch),
-		SingleBranch:      true,
+		SingleBranch:      false,
 		NoCheckout:        false,
 		Depth:             1,
 		RecurseSubmodules: 1,
@@ -118,7 +124,7 @@ func (g *Git) CloneBranch(ctx context.Context, storageArea *storage.Area, repoUr
 	}
 
 	repo, err := git.PlainCloneContext(ctx, storageArea.Path, false, &cloneOptions)
-	if err != nil {
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return nil, err
 	}
 
@@ -144,7 +150,7 @@ func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl stri
 		Auth:              auth,
 		RemoteName:        "origin",
 		ReferenceName:     "refs/heads/main",
-		SingleBranch:      true,
+		SingleBranch:      false,
 		NoCheckout:        false,
 		Depth:             1,
 		RecurseSubmodules: 1,
@@ -245,7 +251,7 @@ func (g *Git) CreateBranch(ctx context.Context, gitRepo *GitRepo) error {
 		InsecureSkipTLS:   false,
 		CABundle:          []byte{},
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return fmt.Errorf("could not pull from origin: %w", err)
 	}
 
@@ -287,12 +293,11 @@ func (g *Git) Push(ctx context.Context, gitRepo *GitRepo) error {
 		Auth:              auth,
 		Progress:          g.getProgressWriter(),
 		Prune:             false,
-		Force:             false,
+		Force:             true,
 		InsecureSkipTLS:   false,
 		CABundle:          []byte{},
 		RequireRemoteRefs: []config.RefSpec{},
 	})
-
 	if err != nil {
 		return err
 	}

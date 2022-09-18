@@ -1,0 +1,11 @@
+apiVersion: git.front.kjuulh.io/kjuulh/kraken/blob/main/schema/v1
+name: write-a-readme
+select:
+  repositories:
+    - git@git.front.kjuulh.io:kjuulh/kraken-test.git
+      #  providers:
+      #    - gitea: https://git.front.kjuulh.io
+      #      organisation: "cibus"
+actions:
+  - type: docker-build
+    entry: Dockerfile

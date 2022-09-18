@@ -2,7 +2,9 @@ package gitproviders
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"sync"
 
 	"code.gitea.io/sdk/gitea"
@@ -121,7 +123,15 @@ func (g *Gitea) getOrCreateClient(ctx context.Context, server string) (*gitea.Cl
 	client, ok := g.giteaClients[server]
 	if !ok || client == nil {
 		c, err := gitea.NewClient(server)
-		c.SetBasicAuth("kjuulh", "c0bd801cc9a7f2ed559ea45d603afc92f5443f19")
+		username, ok := os.LookupEnv("GITEA_USERNAME")
+		if !ok {
+			return nil, errors.New("missing environment variable GITEA_USERNAME")
+		}
+		apitoken, ok := os.LookupEnv("GITEA_API_TOKEN")
+		if !ok {
+			return nil, errors.New("missing environment variable GITEA_API_TOKEN")
+		}
+		c.SetBasicAuth(username, apitoken)
 		if err != nil {
 			return nil, err
 		}
