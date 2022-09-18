@@ -35,6 +35,7 @@
 - [ ] Make configurable git provider
 - [ ] Create templating function
 - [ ] Add way to see progress of runners
+- [ ] Implement global .kraken store for easy access
 
 ## Version 1.x
 
