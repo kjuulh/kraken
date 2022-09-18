@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"git.front.kjuulh.io/kjuulh/curre"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/serverdeps"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/serverdeps"
 	"go.uber.org/zap"
 )
 

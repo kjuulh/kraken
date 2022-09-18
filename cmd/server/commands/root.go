@@ -7,7 +7,7 @@ import (
 
 func CreateServerCmd(logger *zap.Logger) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "krakenserver",
+		Use: "octopushserver",
 	}
 
 	cmd.AddCommand(NewStartServerCommand(logger))

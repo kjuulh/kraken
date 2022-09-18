@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 
-	"git.front.kjuulh.io/kjuulh/kraken/internal/actions/builders"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/actions/querier"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/schema"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/actions/builders"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/actions/querier"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/schema"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/storage"
 	"go.uber.org/zap"
 )
 
 type Action struct {
-	Schema     *schema.KrakenSchema
+	Schema     *schema.OctopushSchema
 	SchemaPath string
 }
 

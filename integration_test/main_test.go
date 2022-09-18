@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"git.front.kjuulh.io/kjuulh/kraken/internal/server"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/server"
 	"go.uber.org/zap"
 )
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"git.front.kjuulh.io/kjuulh/kraken/internal/commands"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/serverdeps"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/jobs"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/commands"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/serverdeps"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/jobs"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.uber.org/zap"

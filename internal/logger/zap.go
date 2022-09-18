@@ -12,7 +12,7 @@ func New() (*zap.Logger, error) {
 		return lvl >= zapcore.ErrorLevel
 	})
 	lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl < zapcore.ErrorLevel
+		return lvl < zapcore.ErrorLevel // && lvl > zapcore.DebugLevel
 	})
 
 	config := zap.NewDevelopmentEncoderConfig()
@@ -28,5 +28,6 @@ func New() (*zap.Logger, error) {
 	)
 
 	logger := zap.New(core)
+
 	return logger, nil
 }

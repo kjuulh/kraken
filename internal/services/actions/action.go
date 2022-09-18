@@ -3,7 +3,7 @@ package actions
 import (
 	"context"
 
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/storage"
 	"go.uber.org/zap"
 )
 

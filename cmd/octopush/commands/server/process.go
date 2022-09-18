@@ -1,4 +1,4 @@
-package commands
+package server
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CreateKrakenProcessCmd() *cobra.Command {
+func CreateOctopushProcessCmd() *cobra.Command {
 
 	var (
 		actionsRepo string

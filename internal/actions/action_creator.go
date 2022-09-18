@@ -7,9 +7,9 @@ import (
 	"path"
 	"time"
 
-	"git.front.kjuulh.io/kjuulh/kraken/internal/schema"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/providers"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/schema"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/providers"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/storage"
 	"go.uber.org/zap"
 )
 
@@ -23,12 +23,12 @@ type (
 	ActionCreator struct {
 		logger  *zap.Logger
 		storage *storage.Service
-		git     *providers.Git
+		git     *providers.GoGit
 	}
 
 	ActionCreatorDeps interface {
 		GetStorageService() *storage.Service
-		GetGitProvider() *providers.Git
+		GetGitProvider() *providers.GoGit
 	}
 )
 
@@ -59,19 +59,19 @@ func (ac *ActionCreator) Prepare(ctx context.Context, ops *ActionCreatorOps) (*A
 		return nil, fmt.Errorf("path is invalid: %s", ops.Path)
 	}
 
-	contents, err := os.ReadFile(path.Join(executorUrl, "kraken.yml"))
+	contents, err := os.ReadFile(path.Join(executorUrl, "octopush.yml"))
 	if err != nil {
 		return nil, err
 	}
 
-	krakenSchema, err := schema.Unmarshal(string(contents))
+	octopushSchema, err := schema.Unmarshal(string(contents))
 	if err != nil {
 		return nil, err
 	}
 
 	ac.logger.Debug("Action creator done")
 	return &Action{
-		Schema:     krakenSchema,
+		Schema:     octopushSchema,
 		SchemaPath: executorUrl,
 	}, nil
 }

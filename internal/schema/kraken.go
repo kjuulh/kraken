@@ -2,7 +2,7 @@ package schema
 
 import "gopkg.in/yaml.v3"
 
-type KrakenSchema struct {
+type OctopushSchema struct {
 	ApiVersion string `yaml:"apiVersion"`
 	Name       string `yaml:"name"`
 	Select     struct {
@@ -22,8 +22,8 @@ type KrakenSchema struct {
 	} `yaml:"queries"`
 }
 
-func Unmarshal(raw string) (*KrakenSchema, error) {
-	k := &KrakenSchema{}
+func Unmarshal(raw string) (*OctopushSchema, error) {
+	k := &OctopushSchema{}
 	err := yaml.Unmarshal([]byte(raw), k)
 	if err != nil {
 		return nil, err

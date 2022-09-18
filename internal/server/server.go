@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"git.front.kjuulh.io/kjuulh/curre"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/serverdeps"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/signer"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/serverdeps"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/signer"
 	"go.uber.org/zap"
 )
 

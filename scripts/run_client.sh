@@ -4,5 +4,10 @@ set -e
 
 current_branch=$(git branch --show-current)
 
-go run cmd/kraken/kraken.go process --actions-repo "git@git.front.kjuulh.io:kjuulh/kraken.git" --branch "$current_branch" --path "_examples/actions/write_a_readme"
-go run cmd/kraken/kraken.go process --actions-repo "git@git.front.kjuulh.io:kjuulh/kraken.git" --branch "$current_branch" --path "_examples/queries/scrape_readme"
+export $(cat .env | xargs)
+
+#go run cmd/octopush/octopush.go process --actions-repo "git@git.front.kjuulh.io:kjuulh/octopush.git" --branch "$current_branch" --path "_examples/actions/write_a_readme"
+go run cmd/octopush/octopush.go process \
+  --actions-repo "git@git.front.kjuulh.io:kjuulh/octopush.git"\
+  --branch "$current_branch" \
+  --path "_examples/actions/add_releaserc"

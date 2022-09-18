@@ -1,0 +1,12 @@
+apiVersion: git.front.kjuulh.io/kjuulh/octopush/blob/main/schema/v1
+name: write-a-readme
+select:
+  repositories:
+    - git@git.front.kjuulh.io:kjuulh/octopush-test.git
+      #- git@git.front.kjuulh.io:kjuulh/octopush.git
+      #  providers:
+      #    - gitea: https://git.front.kjuulh.io
+      #      organisation: "cibus"
+actions:
+  - type: go
+    entry: "main.go"
