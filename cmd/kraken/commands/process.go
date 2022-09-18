@@ -23,7 +23,7 @@ func CreateKrakenProcessCmd() *cobra.Command {
 				}{
 					Repository: "git@git.front.kjuulh.io:kjuulh/kraken.git",
 					Branch:     "feature/query-results",
-					Path:       "_examples/queries/scrabe_readme/",
+					Path:       "_examples/queries/scrape_readme/",
 				})
 			if err != nil {
 				panic(err)
