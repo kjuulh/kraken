@@ -51,27 +51,27 @@ func (a *Action) Execute(ctx context.Context, area *storage.Area) error {
 	return nil
 }
 
-func (a *Action) Query(ctx context.Context, area *storage.Area) ([]string, error) {
+func (a *Action) Query(ctx context.Context, area *storage.Area) ([]string, bool, error) {
 	for _, query := range a.Schema.Queries {
 		switch query.Type {
 		case "grep":
 			exe, err := querier.NewRipGrep(zap.L()).Build(ctx, a.SchemaPath, query.Query)
 			if err != nil {
-				return nil, err
+				return nil, false, err
 			}
-			output, err := exe(ctx, area.Path)
+			output, found, err := exe(ctx, area.Path)
 			if err != nil {
-				return nil, err
+				return nil, false, err
 			}
 
 			zap.L().Debug("Execution done")
 
-			return output, nil
+			return output, found, nil
 
 		default:
-			return nil, errors.New("could not determine query type")
+			return nil, false, errors.New("could not determine query type")
 		}
 	}
 
-	return nil, nil
+	return nil, false, nil
 }

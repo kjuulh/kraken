@@ -113,12 +113,15 @@ func (pr *ProcessRepos) processRepo(ctx context.Context, repoUrl string, action 
 	}
 
 	if len(action.Schema.Queries) > 0 {
-		result, err := action.Query(ctx, area)
+		result, found, err := action.Query(ctx, area)
 		if err != nil {
 			return err
 		}
 
-		pr.logger.Info("Query result", zap.Strings("result", result))
+		if found {
+			pr.logger.Info("Query result", zap.Strings("result", result))
+			// TODO: Append to real result, and return together
+		}
 	}
 
 	if len(action.Schema.Actions) > 0 {
