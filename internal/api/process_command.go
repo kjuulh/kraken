@@ -16,7 +16,9 @@ func CommandRoute(logger *zap.Logger, app *gin.Engine, deps *serverdeps.ServerDe
 	commandRoute := app.Group("commands")
 	commandRoute.POST("processRepos", func(c *gin.Context) {
 		type processReposRequest struct {
-			RepositoryUrls []string `json:"repositoryUrls"`
+			Repository string `json:"repository"`
+			Branch     string `json:"branch"`
+			Path       string `json:"path"`
 		}
 		var request processReposRequest
 		err := c.BindJSON(&request)
@@ -28,11 +30,14 @@ func CommandRoute(logger *zap.Logger, app *gin.Engine, deps *serverdeps.ServerDe
 
 		jobId := uuid.New().String()
 
-		go func(repositoryUrls []string, jobId string) {
+		go func(repository string, branch string, path string, jobId string) {
 			ctx := context.WithValue(context.Background(), jobs.JobId{}, jobId)
 			processRepos := commands.NewProcessRepos(logger, deps)
-			err = processRepos.Process(ctx, repositoryUrls)
-		}(request.RepositoryUrls, jobId)
+			err = processRepos.Process(ctx, repository, branch, path)
+			if err != nil {
+				logger.Error("could not process repo", zap.Error(err))
+			}
+		}(request.Repository, request.Branch, request.Path, jobId)
 
 		c.Status(http.StatusAccepted)
 	})

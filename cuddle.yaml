@@ -9,3 +9,9 @@ vars:
 scripts:
   push_github:
     type: shell
+  run_server:
+    type: shell
+  run_client:
+    type: shell
+  run:
+    type: shell

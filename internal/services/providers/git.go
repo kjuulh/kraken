@@ -2,6 +2,7 @@ package providers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -30,6 +31,15 @@ type GitRepo struct {
 	repo *git.Repository
 }
 
+func (gr *GitRepo) GetHEAD() (string, error) {
+	head, err := gr.repo.Head()
+	if err != nil {
+		return "", err
+	}
+
+	return head.Name().Short(), nil
+}
+
 type GitAuth string
 
 const (
@@ -53,6 +63,76 @@ func NewGit(logger *zap.Logger, gitConfig *GitConfig, openPGP *signer.OpenPGP) *
 	return &Git{logger: logger, gitConfig: gitConfig, openPGP: openPGP}
 }
 
+func (g *Git) GetOriginHEADForRepo(ctx context.Context, gitRepo *GitRepo) (string, error) {
+	auth, err := g.GetAuth()
+	if err != nil {
+		return "", err
+	}
+
+	remote, err := gitRepo.repo.Remote("origin")
+	if err != nil {
+		return "", err
+	}
+
+	refs, err := remote.ListContext(ctx, &git.ListOptions{
+		Auth: auth,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	headRef := ""
+	for _, ref := range refs {
+		//g.logger.Debug(ref.String())
+		if !ref.Name().IsBranch() {
+			headRef = ref.Target().Short()
+		}
+	}
+
+	if headRef == "" {
+		return "", errors.New("no upstream HEAD branch could be found")
+	}
+
+	return headRef, nil
+}
+
+func (g *Git) CloneBranch(ctx context.Context, storageArea *storage.Area, repoUrl string, branch string) (*GitRepo, error) {
+	g.logger.Debug(
+		"cloning repository",
+		zap.String("repoUrl", repoUrl),
+		zap.String("path", storageArea.Path),
+	)
+
+	auth, err := g.GetAuth()
+	if err != nil {
+		return nil, err
+	}
+
+	cloneOptions := git.CloneOptions{
+		URL:               repoUrl,
+		Auth:              auth,
+		RemoteName:        "origin",
+		ReferenceName:     plumbing.NewBranchReferenceName(branch),
+		SingleBranch:      false,
+		NoCheckout:        false,
+		Depth:             1,
+		RecurseSubmodules: 1,
+		Progress:          g.getProgressWriter(),
+		Tags:              0,
+		InsecureSkipTLS:   false,
+		CABundle:          []byte{},
+	}
+
+	repo, err := git.PlainCloneContext(ctx, storageArea.Path, false, &cloneOptions)
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		return nil, err
+	}
+
+	g.logger.Debug("done cloning repo")
+
+	return &GitRepo{repo: repo}, nil
+}
+
 func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl string) (*GitRepo, error) {
 	g.logger.Debug(
 		"cloning repository",
@@ -70,7 +150,7 @@ func (g *Git) Clone(ctx context.Context, storageArea *storage.Area, repoUrl stri
 		Auth:              auth,
 		RemoteName:        "origin",
 		ReferenceName:     "refs/heads/main",
-		SingleBranch:      true,
+		SingleBranch:      false,
 		NoCheckout:        false,
 		Depth:             1,
 		RecurseSubmodules: 1,
@@ -162,7 +242,7 @@ func (g *Git) CreateBranch(ctx context.Context, gitRepo *GitRepo) error {
 	err = worktree.PullContext(ctx, &git.PullOptions{
 		RemoteName:        "origin",
 		ReferenceName:     "refs/heads/main",
-		SingleBranch:      true,
+		SingleBranch:      false,
 		Depth:             1,
 		Auth:              auth,
 		RecurseSubmodules: 1,
@@ -171,7 +251,7 @@ func (g *Git) CreateBranch(ctx context.Context, gitRepo *GitRepo) error {
 		InsecureSkipTLS:   false,
 		CABundle:          []byte{},
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return fmt.Errorf("could not pull from origin: %w", err)
 	}
 
@@ -213,12 +293,11 @@ func (g *Git) Push(ctx context.Context, gitRepo *GitRepo) error {
 		Auth:              auth,
 		Progress:          g.getProgressWriter(),
 		Prune:             false,
-		Force:             false,
+		Force:             true,
 		InsecureSkipTLS:   false,
 		CABundle:          []byte{},
 		RequireRemoteRefs: []config.RefSpec{},
 	})
-
 	if err != nil {
 		return err
 	}
