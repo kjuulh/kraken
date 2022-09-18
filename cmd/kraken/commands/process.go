@@ -22,8 +22,8 @@ func CreateKrakenProcessCmd() *cobra.Command {
 					Path       string `json:"path"`
 				}{
 					Repository: "git@git.front.kjuulh.io:kjuulh/kraken.git",
-					Branch:     "feature/docker-action",
-					Path:       "_examples/actions/docker_action/",
+					Branch:     "feature/query-results",
+					Path:       "_examples/queries/scrabe_readme/",
 				})
 			if err != nil {
 				panic(err)

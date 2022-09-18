@@ -34,6 +34,7 @@
 - [ ] Make configurable gpg keyset
 - [ ] Make configurable git provider
 - [ ] Create templating function
+- [ ] Add way to see progress of runners
 
 ## Version 1.x
 

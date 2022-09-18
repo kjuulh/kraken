@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"git.front.kjuulh.io/kjuulh/kraken/internal/actions/builders"
+	"git.front.kjuulh.io/kjuulh/kraken/internal/actions/querier"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/schema"
 	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
 	"go.uber.org/zap"
@@ -48,4 +49,29 @@ func (a *Action) Execute(ctx context.Context, area *storage.Area) error {
 	}
 
 	return nil
+}
+
+func (a *Action) Query(ctx context.Context, area *storage.Area) ([]string, error) {
+	for _, query := range a.Schema.Queries {
+		switch query.Type {
+		case "grep":
+			exe, err := querier.NewRipGrep(zap.L()).Build(ctx, a.SchemaPath, query.Query)
+			if err != nil {
+				return nil, err
+			}
+			output, err := exe(ctx, area.Path)
+			if err != nil {
+				return nil, err
+			}
+
+			zap.L().Debug("Execution done")
+
+			return output, nil
+
+		default:
+			return nil, errors.New("could not determine query type")
+		}
+	}
+
+	return nil, nil
 }

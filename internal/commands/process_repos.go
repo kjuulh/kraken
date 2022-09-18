@@ -112,17 +112,29 @@ func (pr *ProcessRepos) processRepo(ctx context.Context, repoUrl string, action 
 		return err
 	}
 
-	err = action.Execute(ctx, area)
-	if err != nil {
-		return err
+	if len(action.Schema.Queries) > 0 {
+		result, err := action.Query(ctx, area)
+		if err != nil {
+			return err
+		}
+
+		pr.logger.Info("Query result", zap.Strings("result", result))
 	}
 
-	err = pr.commit(ctx, area, repo, repoUrl)
-	if err != nil {
-		return err
+	if len(action.Schema.Actions) > 0 {
+		err = action.Execute(ctx, area)
+		if err != nil {
+			return err
+		}
+
+		err = pr.commit(ctx, area, repo, repoUrl)
+		if err != nil {
+			return err
+		}
 	}
 
 	pr.logger.Debug("processing done", zap.String("path", area.Path), zap.String("repoUrl", repoUrl))
+
 	return nil
 }
 
