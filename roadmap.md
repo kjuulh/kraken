@@ -22,7 +22,7 @@
 - [x] Allow instantiation of actions, kraken template repo etc.
 - [x] Implement docker action
 - [x] Create pr for gitea provider
-- [ ] Providing query results
+- [x] Providing query results
 - [ ] Create CLI to trigger action
 
 ### Not in scope
