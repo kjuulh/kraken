@@ -1,12 +1,12 @@
 package serverdeps
 
 import (
-	actionc "git.front.kjuulh.io/kjuulh/kraken/internal/actions"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/gitproviders"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/actions"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/providers"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/signer"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
+	actionc "git.front.kjuulh.io/kjuulh/octopush/internal/actions"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/gitproviders"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/actions"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/providers"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/signer"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/storage"
 	"go.uber.org/zap"
 )
 
@@ -53,7 +53,7 @@ func (deps *ServerDeps) GetStorageService() *storage.Service {
 	return storage.NewService(deps.logger.With(zap.Namespace("storage")), deps.storageConfig)
 }
 
-func (deps *ServerDeps) GetGitProvider() *providers.Git {
+func (deps *ServerDeps) GetGitProvider() *providers.GoGit {
 	return providers.NewGit(deps.logger.With(zap.Namespace("gitProvider")), deps.gitCfg, deps.openPGP)
 }
 

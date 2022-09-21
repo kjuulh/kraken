@@ -1,8 +1,8 @@
-apiVersion: git.front.kjuulh.io/kjuulh/kraken/blob/main/schema/v1
+apiVersion: git.front.kjuulh.io/kjuulh/octopush/blob/main/schema/v1
 name: write-a-readme
 select:
   repositories:
-    - git@git.front.kjuulh.io:kjuulh/kraken-test.git
+    - git@git.front.kjuulh.io:kjuulh/octopush-test.git
       #  providers:
       #    - gitea: https://git.front.kjuulh.io
       #      organisation: "cibus"

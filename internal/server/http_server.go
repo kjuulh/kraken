@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"git.front.kjuulh.io/kjuulh/curre"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/api"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/serverdeps"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/api"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/serverdeps"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

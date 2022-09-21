@@ -22,7 +22,7 @@ func NewDefaultStorageConfig() (*StorageConfig, error) {
 		return nil, err
 	}
 	return &StorageConfig{
-		Path: path.Join(tempDir, "kraken"),
+		Path: path.Join(tempDir, "octopush"),
 	}, nil
 }
 

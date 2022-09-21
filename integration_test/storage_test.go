@@ -9,7 +9,7 @@ import (
 	"path"
 	"testing"
 
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/storage"
 	"github.com/stretchr/testify/require"
 )
 

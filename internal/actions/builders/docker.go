@@ -36,7 +36,7 @@ func (g *DockerBuild) Build(ctx context.Context, modulePath, entryPath string) (
 		return nil, err
 	}
 	tag := hex.EncodeToString(b)
-	buildDockerCmd := fmt.Sprintf("(cd %s; docker build -f %s --tag kraken/%s .)", modulePath, entryPath, tag)
+	buildDockerCmd := fmt.Sprintf("(cd %s; docker build -f %s --tag octopush/%s .)", modulePath, entryPath, tag)
 	g.logger.Debug("Running command", zap.String("command", buildDockerCmd))
 
 	cmd := exec.CommandContext(
@@ -73,7 +73,7 @@ func (g *DockerBuild) Build(ctx context.Context, modulePath, entryPath string) (
 			ctx,
 			"/bin/bash",
 			"-c",
-			fmt.Sprintf("docker run --rm -v %s/:/src/work/ kraken/%s", victimPath, tag),
+			fmt.Sprintf("docker run --rm -v %s/:/src/work/ octopush/%s", victimPath, tag),
 		)
 
 		runDockerWriter := &zapio.Writer{

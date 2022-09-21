@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	"git.front.kjuulh.io/kjuulh/kraken/internal/actions"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/gitproviders"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/schema"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/providers"
-	"git.front.kjuulh.io/kjuulh/kraken/internal/services/storage"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/actions"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/gitproviders"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/schema"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/providers"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/services/storage"
 	giturls "github.com/whilp/git-urls"
 	"go.uber.org/zap"
 )
@@ -20,14 +20,14 @@ type (
 	ProcessRepos struct {
 		logger        *zap.Logger
 		storage       *storage.Service
-		git           *providers.Git
+		git           *providers.GoGit
 		actionCreator *actions.ActionCreator
 		gitea         *gitproviders.Gitea
 	}
 
 	ProcessReposDeps interface {
 		GetStorageService() *storage.Service
-		GetGitProvider() *providers.Git
+		GetGitProvider() *providers.GoGit
 		GetActionCreator() *actions.ActionCreator
 		GetGitea() *gitproviders.Gitea
 	}
@@ -79,7 +79,7 @@ func (pr *ProcessRepos) Process(ctx context.Context, repository string, branch s
 	return nil
 }
 
-func (pr *ProcessRepos) getRepoUrls(ctx context.Context, schema *schema.KrakenSchema) ([]string, error) {
+func (pr *ProcessRepos) getRepoUrls(ctx context.Context, schema *schema.OctopushSchema) ([]string, error) {
 	repoUrls := make([]string, 0)
 
 	repoUrls = append(repoUrls, schema.Select.Repositories...)
@@ -161,7 +161,7 @@ func (pr *ProcessRepos) prepareAction(
 	return cleanupfunc, area, nil
 }
 
-func (pr *ProcessRepos) clone(ctx context.Context, area *storage.Area, repoUrl string) (*providers.GitRepo, error) {
+func (pr *ProcessRepos) clone(ctx context.Context, area *storage.Area, repoUrl string) (*providers.GoGitRepo, error) {
 	pr.logger.Debug("Cloning repo", zap.String("path", area.Path), zap.String("repoUrl", repoUrl))
 	cloneCtx, _ := context.WithTimeout(ctx, time.Second*5)
 	repo, err := pr.git.Clone(cloneCtx, area, repoUrl)
@@ -177,7 +177,7 @@ func (pr *ProcessRepos) clone(ctx context.Context, area *storage.Area, repoUrl s
 	return repo, nil
 }
 
-func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *providers.GitRepo, repoUrl string) error {
+func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *providers.GoGitRepo, repoUrl string) error {
 	wt, err := pr.git.Add(ctx, area, repo)
 	if err != nil {
 		return fmt.Errorf("could not add file: %w", err)
@@ -189,8 +189,9 @@ func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *pr
 	}
 
 	if status.IsClean() {
+		// TODO: check for pr
 		pr.logger.Info("Returning early, as no modifications are detected")
-		return nil
+		//return nil
 	}
 
 	err = pr.git.Commit(ctx, repo)
@@ -231,7 +232,7 @@ func (pr *ProcessRepos) commit(ctx context.Context, area *storage.Area, repo *pr
 			return err
 		}
 
-		err = pr.gitea.CreatePr(ctx, fmt.Sprintf("%s://%s", "https", url.Host), org, semanticName, head, originHead, "kraken-apply")
+		err = pr.gitea.CreatePr(ctx, fmt.Sprintf("%s://%s", "https", url.Host), org, semanticName, head, originHead, "octopush-apply")
 		if err != nil {
 			return err
 		}

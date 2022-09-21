@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"git.front.kjuulh.io/kjuulh/kraken/internal/server"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/server"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -9,7 +9,7 @@ import (
 func NewStartServerCommand(logger *zap.Logger) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
-		Short: "Start the kraken server",
+		Short: "Start the octopush server",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return server.Start(logger)
 		},

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"git.front.kjuulh.io/kjuulh/kraken/internal/serverdeps"
+	"git.front.kjuulh.io/kjuulh/octopush/internal/serverdeps"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

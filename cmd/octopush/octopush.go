@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"git.front.kjuulh.io/kjuulh/octopush/cmd/server/commands"
+	"git.front.kjuulh.io/kjuulh/octopush/cmd/octopush/commands"
 	"git.front.kjuulh.io/kjuulh/octopush/internal/logger"
 	"go.uber.org/zap"
 )
@@ -21,9 +21,8 @@ func main() {
 }
 
 func Execute(logger *zap.Logger) {
-	err := commands.CreateServerCmd(logger).Execute()
+	err := commands.CreateOctopushCmd(logger).Execute()
 	if err != nil {
-		logger.Error("execution failed", zap.Error(err))
 		os.Exit(1)
 	}
 }

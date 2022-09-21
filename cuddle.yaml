@@ -3,7 +3,7 @@
 base: "git@git.front.kjuulh.io:kjuulh/cuddle-go-plan.git"
 
 vars:
-  service: "kraken"
+  service: "octopush"
   deployments: "git@git.front.kjuulh.io:kjuulh/deployments.git"
 
 scripts:
