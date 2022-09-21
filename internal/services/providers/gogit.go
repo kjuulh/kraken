@@ -227,13 +227,6 @@ func (g *GoGit) CreateBranch(ctx context.Context, gitRepo *GoGitRepo) error {
 		return fmt.Errorf("could not checkout branch: %w", err)
 	}
 
-	//remoteRef := plumbing.NewRemoteReferenceName("origin", "octopush-apply")
-	//ref := plumbing.NewSymbolicReference(refSpec, remoteRef)
-	//err = gitRepo.repo.Storer.SetReference(ref)
-	//if err != nil {
-	//	return fmt.Errorf("could not set reference: %w", err)
-	//}
-
 	auth, err := g.GetAuth()
 	if err != nil {
 		return err
