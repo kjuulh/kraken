@@ -28,6 +28,11 @@
 ## Version 0.2
 
 - [x] Write README
+- [x] Fix git issues
+- [x] Allow octopush to run directly on the cli
+
+## Version 0.3
+
 - [ ] Make select depend on query
 - [ ] Make configurable ssh user
 - [ ] Make configurable gpg keyset
@@ -43,7 +48,7 @@
 - [ ] Setup releases on gitea using drone
 - [ ] Figure out a license (probably MIT)
 
-## Version 0.3
+## Version 0.4
 
 - [ ] Create setup version for local actions
 - [ ] Create setup version for server actions
