@@ -5,7 +5,7 @@ go 1.19
 require (
 	code.gitea.io/sdk/gitea v0.15.1
 	git.front.kjuulh.io/kjuulh/curre v1.3.5
-	github.com/ProtonMail/go-crypto v0.0.0-20220822140716-1678d6eb0cbe
+	github.com/ProtonMail/go-crypto v0.0.0-20221026131551-cf6655e29de4
 	github.com/gin-contrib/zap v0.0.2
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-git/go-git/v5 v5.4.2
