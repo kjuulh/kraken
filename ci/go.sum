@@ -1,5 +1,5 @@
-git.front.kjuulh.io/kjuulh/dagger-go v0.0.0-20221029161555-45ca537f6dda h1:JxoNsZllDRAJYVW7U8IA+v1biaNsPxoGr/JLW5Ckhrw=
-git.front.kjuulh.io/kjuulh/dagger-go v0.0.0-20221029161555-45ca537f6dda/go.mod h1:aO3JiA+YlsZHvRJH+yfEt2VA8s+Ku1tyqhP/eYnDzqc=
+git.front.kjuulh.io/kjuulh/dagger-go v0.0.0-20221029165029-165554ee156a h1:PusWi4qZE5XGIoYUJzTXzwmmpNVZvgjYuGXa0GDOMoE=
+git.front.kjuulh.io/kjuulh/dagger-go v0.0.0-20221029165029-165554ee156a/go.mod h1:aO3JiA+YlsZHvRJH+yfEt2VA8s+Ku1tyqhP/eYnDzqc=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/inconshreveable/mousetrap v1.0.1 h1:U3uMjPSQEBMNp1lFxmllqCPM6P5u/Xq7Pgzkat/bFNc=
 github.com/inconshreveable/mousetrap v1.0.1/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
