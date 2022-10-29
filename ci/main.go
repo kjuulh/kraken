@@ -9,11 +9,17 @@ import (
 )
 
 func main() {
-	if err := cli.Build(
+	cmd := &cobra.Command{
+		Use: "dagger-go",
+	}
+
+	cmd.AddCommand(cli.Build(
 		func(cmd *cobra.Command) {},
 		func(ctx context.Context) error {
 			return nil
-		}); err != nil {
-		log.Fatal(err)
+		}))
+
+	if err := cmd.Execute(); err != nil {
+		log.Fatal("%w", err)
 	}
 }
