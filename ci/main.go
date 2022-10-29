@@ -15,9 +15,7 @@ func main() {
 
 	cmd.AddCommand(cli.Build(
 		func(cmd *cobra.Command) {},
-		func(ctx context.Context) error {
-			return nil
-		}))
+		nil))
 
 	if err := cmd.Execute(); err != nil {
 		log.Fatal("%w", err)
