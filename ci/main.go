@@ -12,7 +12,7 @@ func main() {
 		Use: "dagger-go",
 	}
 
-	cmd.AddCommand(cli.Build())
+	cmd.AddCommand(cli.Build("cmd/octopush/octopush.go", ""))
 	if err := cmd.Execute(); err != nil {
 		log.Fatal("%w", err)
 	}
