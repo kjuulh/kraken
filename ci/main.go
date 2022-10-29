@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 
 	"git.front.kjuulh.io/kjuulh/dagger-go/pkg/cli"
