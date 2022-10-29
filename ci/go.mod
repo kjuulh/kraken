@@ -3,7 +3,7 @@ module ci
 go 1.19
 
 require (
-	git.front.kjuulh.io/kjuulh/dagger-go v0.0.4
+	git.front.kjuulh.io/kjuulh/dagger-go v0.0.5
 	github.com/spf13/cobra v1.6.1
 )
 
