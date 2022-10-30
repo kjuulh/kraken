@@ -3,13 +3,13 @@ module ci
 go 1.19
 
 require (
-	git.front.kjuulh.io/kjuulh/dagger-go v0.0.6
+	git.front.kjuulh.io/kjuulh/dagger-go v0.0.8
 	github.com/spf13/cobra v1.6.1
 )
 
 require (
 	dagger.io/dagger v0.3.1 // indirect
-	git.front.kjuulh.io/kjuulh/byg v0.0.1 // indirect
+	git.front.kjuulh.io/kjuulh/byg v0.0.7 // indirect
 	github.com/Khan/genqlient v0.5.0 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
