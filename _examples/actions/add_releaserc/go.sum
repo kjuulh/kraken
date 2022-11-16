@@ -6,6 +6,8 @@ github.com/bitfield/script v0.21.0 h1:/OMglZmed2JyzLkmxYvZQMWs18XjPZxDB/0ht0pxrB
 github.com/bitfield/script v0.21.0/go.mod h1:l3AZPVAtKQrL03bwh7nlNTUtgrgSWurpJSbtqspYrOA=
 github.com/bitfield/script v0.21.1 h1:k3vYchaqnEPrQ/AS8VFJADM2/B6RbGT75Q3Eago9AHU=
 github.com/bitfield/script v0.21.1/go.mod h1:l3AZPVAtKQrL03bwh7nlNTUtgrgSWurpJSbtqspYrOA=
+github.com/bitfield/script v0.21.2 h1:YoubIUrBWeKKvp3+Ig7laCIyL4++JRs9k2EA3P5f34M=
+github.com/bitfield/script v0.21.2/go.mod h1:l3AZPVAtKQrL03bwh7nlNTUtgrgSWurpJSbtqspYrOA=
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.6/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.7 h1:81/ik6ipDQS2aGcBfIN5dHDB36BwrStyeAQquSYCV4o=
