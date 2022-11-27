@@ -239,9 +239,15 @@ impl GitProvider for LocalGitProvider {
 
         remote.fetch(refspec, Some(&mut fo), None)?;
 
-        let fetch_head = repo.find_reference("FETCH_HEAD")?;
-        let commit = repo.reference_to_annotated_commit(&fetch_head)?;
-        Self::do_merge(&repo, &branch_name, commit)?;
+        match repo.find_reference("FETCH_HEAD") {
+            Ok(fetch_head) => {
+                let commit = repo.reference_to_annotated_commit(&fetch_head)?;
+                Self::do_merge(&repo, &branch_name, commit)?;
+            }
+            Err(e) => {
+                tracing::info!(error = e.to_string(), "upstream branch not found");
+            }
+        }
 
         Ok(())
     }

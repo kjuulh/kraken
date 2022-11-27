@@ -6,6 +6,7 @@ use tokio::sync::Mutex;
 
 pub mod git;
 pub mod gitea;
+pub mod github;
 
 #[async_trait]
 pub trait GitProvider {

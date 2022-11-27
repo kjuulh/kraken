@@ -2,7 +2,10 @@ use std::path::PathBuf;
 
 use clap::{Arg, ArgAction, ArgMatches, Command};
 use octopush_core::{
-    git::{git::LocalGitProviderOptions, gitea::client::DefaultGiteaClientOptions},
+    git::{
+        git::LocalGitProviderOptions, gitea::client::DefaultGiteaClientOptions,
+        github::github_client::DefaultGitHubClientOptions,
+    },
     schema,
 };
 use octopush_infra::service_register::ServiceRegister;
@@ -41,6 +44,20 @@ pub fn execute_cmd() -> Command {
                 .env("GITEA_URL")
                 .required(false),
         )
+        .arg(
+            Arg::new("github-api-token")
+                .long("github-api-token")
+                .action(ArgAction::Set)
+                .env("GITHUB_API_TOKEN")
+                .required(false),
+        )
+        .arg(
+            Arg::new("github-username")
+                .long("github-username")
+                .action(ArgAction::Set)
+                .env("GITHUB_USERNAME")
+                .required(false),
+        )
 }
 
 pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
@@ -52,6 +69,9 @@ pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
     let gitea_username = args.get_one::<String>("gitea-username");
     let gitea_url = args.get_one::<String>("gitea-url");
 
+    let github_http_token = args.get_one::<String>("github-api-token");
+    let github_username = args.get_one::<String>("github-username");
+
     let service_register = ServiceRegister::new(
         LocalGitProviderOptions { http_auth: None },
         DefaultGiteaClientOptions {
@@ -61,7 +81,13 @@ pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
                 .map(|(u, ht)| format!("{}:{}", u, ht))
                 .map(|t| t.clone()),
         },
-    );
+        DefaultGitHubClientOptions {
+            basicauth: github_username
+                .zip(github_http_token)
+                .map(|(u, ht)| format!("{}:{}", u, ht))
+                .map(|t| t.clone()),
+        },
+    )?;
 
     let action_path: PathBuf = action.into();
 
@@ -89,6 +115,13 @@ pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
                 service_register
                     .gitea_selector
                     .run(gitea, &action_path, &action)
+                    .await?;
+            }
+
+            if let Some(github) = &select.github {
+                service_register
+                    .github_selector
+                    .run(github, &action_path, &action)
                     .await?;
             }
         }

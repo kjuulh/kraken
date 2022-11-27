@@ -10,10 +10,17 @@ use octopush_core::{
             provider::DefaultGiteaProvider,
             DynGiteaProvider,
         },
+        github::{
+            github_client::{DefaultGitHubClient, DefaultGitHubClientOptions},
+            github_provider::DefaultGitHubProvider,
+            DynGitHubProvider,
+        },
         DynGitProvider,
     },
     schema::parser::{DefaultSchemaParser, DynSchemaParser},
-    selectors::{git_selector::GitSelector, gitea_selector::GiteaSelector},
+    selectors::{
+        git_selector::GitSelector, gitea_selector::GiteaSelector, github_selector::GitHubSelector,
+    },
     storage::{local::LocalStorageEngine, DynStorageEngine},
 };
 
@@ -26,13 +33,16 @@ pub struct ServiceRegister {
     pub gitea_provider: DynGiteaProvider,
     pub git_selector: Arc<GitSelector>,
     pub gitea_selector: Arc<GiteaSelector>,
+    pub github_provider: DynGitHubProvider,
+    pub github_selector: Arc<GitHubSelector>,
 }
 
 impl ServiceRegister {
     pub fn new(
         git_provider_options: LocalGitProviderOptions,
         gitea_client_options: DefaultGiteaClientOptions,
-    ) -> Self {
+        github_client_options: DefaultGitHubClientOptions,
+    ) -> eyre::Result<Self> {
         let storage_engine = Arc::new(LocalStorageEngine::new("/tmp/octopush".into()));
         let git_provider = Arc::new(LocalGitProvider::new(
             git_provider_options,
@@ -53,8 +63,19 @@ impl ServiceRegister {
             git_provider.clone(),
             executor.clone(),
         ));
+        let github_client = Arc::new(DefaultGitHubClient::new(&github_client_options)?);
+        let github_provider = Arc::new(DefaultGitHubProvider::new(
+            git_provider.clone(),
+            storage_engine.clone(),
+            github_client.clone(),
+        ));
+        let github_selector = Arc::new(GitHubSelector::new(
+            github_provider.clone(),
+            git_provider.clone(),
+            executor.clone(),
+        ));
 
-        Self {
+        Ok(Self {
             storage_engine,
             git_provider,
             schema_parser,
@@ -63,7 +84,9 @@ impl ServiceRegister {
             gitea_provider,
             git_selector,
             gitea_selector,
-        }
+            github_provider,
+            github_selector,
+        })
     }
 
     pub async fn cleanup(self) -> eyre::Result<()> {
