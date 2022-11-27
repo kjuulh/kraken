@@ -28,21 +28,21 @@ pub fn execute_cmd() -> Command {
                 .long("gitea-api-token")
                 .action(ArgAction::Set)
                 .env("GITEA_API_TOKEN")
-                .required(false),
+                .required(true),
         )
         .arg(
             Arg::new("gitea-username")
                 .long("gitea-username")
                 .action(ArgAction::Set)
                 .env("GITEA_USERNAME")
-                .required(false),
+                .required(true),
         )
         .arg(
             Arg::new("gitea-url")
                 .long("gitea-url")
                 .action(ArgAction::Set)
                 .env("GITEA_URL")
-                .required(false),
+                .required(true),
         )
         .arg(
             Arg::new("github-api-token")

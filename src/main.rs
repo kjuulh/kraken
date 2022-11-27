@@ -1,9 +1,15 @@
 use dotenv::dotenv;
+use eyre::Context;
 use tracing_subscriber::prelude::*;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    dotenv()?;
+    if let Err(e) = dotenv().context(".env file not found") {
+        tracing::info!(
+            error = e.to_string(),
+            "no .env file specified, command args are required"
+        );
+    }
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
