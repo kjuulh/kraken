@@ -14,19 +14,19 @@ are so many of them. Octopush aims to change that.
 
 ## Features
 
-- Uses an actions repository, where you store all your pending commands or
-  queries to be performed across your fleet of repositories. (See \_examples)
-- Actions can both execute changes, open pull-requests or in some cases commit
-  directly to your preferred branch
-  - Actions natively use either shell, go or docker files to execute changes
-    (see \_examples/actions)
-- Actions can also be analytical, so you can query your fleet for whatever you
-  would like
-- Works both as a client, or as a server
+- [x] Uses an actions repository, where you store all your pending commands or
+      queries to be performed across your fleet of repositories. (See
+      \_examples)
+- [x] Actions can both execute changes, open pull-requests or in some cases
+      commit directly to your preferred branch
+  - [x] Actions natively use either shell, go or docker files to execute changes
+        (see \_examples/actions)
+- [ ] Actions can also be analytical, so you can query your fleet for whatever
+      you would like
 - Supports SSH/https for fetching repos
-- Supports GPG signing
-- Supports dry-run mode for easy testing when developing your actions (enabled
-  by default on the cli)
+- [ ] Supports GPG signing
+- [ ] Supports dry-run mode for easy testing when developing your actions
+      (enabled by default on the cli)
 
 ## Roadmap
 
@@ -34,10 +34,8 @@ Refer to [roadmap.md](roadmap.md)
 
 ## Installation
 
-Octopush comes in two modes. Client or Client -> Server. Octopush can stand
-alone as a client, for smaller and less secure changes. However, for
-organisations, it may be useful to use Octopush in server mode, which supports
-more features, and has extra security built in.
+Octopush runs on your client and acts on your behalf, unless of course it is
+setup on a remote server
 
 ### Client (CLI)
 
@@ -55,8 +53,8 @@ docker run --rm kasperhermansen/octopushcli:latest version
 git clone https://github.com/kjuulh/octopush.git
 cd octopush
 
-go build cmd/octopush/octopush.go
-./octopush version
+cargo build --release --target=x64_86-unknown-linux_musl
+./target/x64_86-unknown-linux_musl/octopush version
 ```
 
 #### Or Build with cuddle
@@ -68,48 +66,11 @@ cd octopush
 cuddle_cli x build_cli
 ```
 
-### Server
-
-We prefer to run the server directly as a docker image.
-
-```bash
-docker pull kasperhermansen/octopushserver:latest
-docker run -p 9090:80 --rm kasperhermansen/octopushserver:latest
-```
-
-#### Or Build from source
-
-```bash
-git clone https://github.com/kjuulh/octopush.git
-cd octopush
-
-go build cmd/server/server.go
-./server version
-```
-
-#### Or Build with cuddle
-
-```bash
-git clone https://github.com/kjuulh/octopush.git
-cd octopush
-
-cuddle_cli x build_server
-```
-
 ## Usage
 
 **DISCLAIMER:** It is still early days, and the api of the CLI is subject to
 change, this provides the aim of the project, but as it is currently in flux,
 there may not be as much handholding in the actual usage.
-
-I will focus on the client here, as the server provides the same features,
-though available through the cli, but instead as configuration options (see
-[CONFIGURATION_SERVER.md](CONFIGURATION_SERVER.md))
-
-Octopush ships with autocomplete built in (courtesy of spf13/cobra). To add:
-
-- Bash: `echo 'source <(octopush completion bash)' >> ~/.bashrc`
-- Zsh: `echo 'source <(octopush completion zsh)' >> ~/.zshrc`
 
 ### Creating a new action
 
@@ -118,14 +79,15 @@ Creating a new action
 ```bash
 git init my-actions # should only be done once
 cd my-actions
-octopush tmpl init write-a-readme --command
+octopush tmpl init write-a-readme --action
 cat write-a-readme/octopush.yml
 
 # Output
-# apiVersion: git.front.kjuulh.io/kjuulh/octopush/blob/main/schema/v1
+# apiVersion: action
 # name: write-a-readme
 # select:
-#   repositories: []
+#   git:
+#     repositories: []
 # actions:
 #   - type: shell
 #     entry: "main.sh"
@@ -143,9 +105,9 @@ cat << EOF > write-a-readme/octopush.yml
 apiVersion: git.front.kjuulh.io/kjuulh/octopush/blob/main/schema/v1
 name: write-a-readme
 select:
-  providers:                           # new
-  - gitea: https://git.front.kjuulh.io # new
-    organisation: "kjuulh"             # new
+  gitea:                  # new
+    repositories:         # new
+      "kjuulh/octopush"   # new
 actions:
   - type: shell
     entry: "main.sh"
@@ -234,16 +196,5 @@ outside core maintainers.
 Simply:
 
 ```bash
-go run cmd/octopush/octopush.go # CLI
-go run cmd/server/server.go # Server
-```
-
-We follow the `gofmt` formatting, along with optionally but recommend `golines`
-
-If using cuddle
-
-```
-cuddle_cli x run # Run both server and client, will do a quick test sweep on the cli
-cuddle_cli x watch_run # Automatically refresh both
-cuddle_cli x fmt # will format the current code
+cargo build
 ```
