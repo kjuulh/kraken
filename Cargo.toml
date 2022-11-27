@@ -1,0 +1,31 @@
+[package]
+name = "octopush"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members = [
+  "crates/octopush_cli",
+  "crates/octopush_infra",
+  "crates/octopush_core",
+  "crates/gitea_raw_client",
+  "crates/gitea_client",
+]
+
+[workspace.dependencies]
+eyre = { version = "0.6.8" }
+async-trait = "0.1.58"
+tokio = { version = "1.21.2", features = ["full", "test-util"] }
+tracing = { version = "0.1.37", features = ["log"] }
+
+[dependencies]
+octopush_cli = { path = "crates/octopush_cli" }
+
+eyre = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+tracing-subscriber = { version = "0.3.16", features = ["json", "env-filter"] }
+dotenv = { version = "0.15.0", features = ["clap", "cli"] }

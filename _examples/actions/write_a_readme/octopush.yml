@@ -1,11 +1,26 @@
-apiVersion: git.front.kjuulh.io/kjuulh/octopush/blob/main/schema/v1
+apiVersion: action
 name: write-a-readme
 select:
-  repositories:
-    - git@git.front.kjuulh.io:kjuulh/octopush-test.git
-      #  providers:
-      #    - gitea: https://git.front.kjuulh.io
-      #      organisation: "cibus"
-actions:
-  - type: go
-    entry: "main.go"
+  #  github:
+  #    repositories:
+  #      - kjuulh/octopush-test
+  #    push:
+  #      pull-request:
+  #        name: "write a readme"
+
+  #  gitea:
+  #    repositories:
+  #      - kjuulh/octopush-test
+  #    push:
+  #      pull-request:
+  #        name: "write a readme"
+
+  git:
+    repositories:
+      - git@git.front.kjuulh.io:kjuulh/octopush-test.git
+    push:
+      branch:
+        name: "write a readme"
+action:
+  type: go
+  entry: "main.go"

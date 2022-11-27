@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  gitea:
+    image: "gitea/gitea:1.17.3"
+    environment:
+      ROOT_URL: "http://gitea:3000"
+      INSTALL_LOCK: "true"
+    healthcheck:
+      test: curl --fail http://localhost:3000 || exit 1
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
+  generator:
+    build:
+      dockerfile: scripts/generate_client.Dockerfile
+      context: ../
+    command: "generate -i http://gitea:3000/swagger.v1.json -g rust -o /mnt/generated/ -p packageName=gitea_raw_client"
+    volumes:
+      - "../:/mnt/generated/"
+    depends_on:
+      gitea:
+        condition: service_healthy

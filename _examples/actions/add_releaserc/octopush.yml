@@ -1,4 +1,4 @@
-apiVersion: git.front.kjuulh.io/kjuulh/octopush/blob/main/schema/v1
+apiVersion: action
 name: write-a-readme
 select:
   repositories:

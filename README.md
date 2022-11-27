@@ -34,10 +34,10 @@ Refer to [roadmap.md](roadmap.md)
 
 ## Installation
 
-Octopush comes in two modes. Client or Client -> Server. Octopush can stand alone as
-a client, for smaller and less secure changes. However, for organisations, it
-may be useful to use Octopush in server mode, which supports more features, and
-has extra security built in.
+Octopush comes in two modes. Client or Client -> Server. Octopush can stand
+alone as a client, for smaller and less secure changes. However, for
+organisations, it may be useful to use Octopush in server mode, which supports
+more features, and has extra security built in.
 
 ### Client (CLI)
 
@@ -182,8 +182,8 @@ To run the script use
 octopush process --path "write-a-readme"
 ```
 
-This will cause the octopush process to automatically apply the action on the repo
-and open a pr.
+This will cause the octopush process to automatically apply the action on the
+repo and open a pr.
 
 ### Query repositories
 
@@ -212,8 +212,8 @@ to help test locally, as well as not cause serious issues. The server
 configuration is pretty much the same, except the command would look like so:
 `octopush server process --path "write-a-readme" --apply`. Octopush will try to
 infer as much as possible, but it may be needed to apply some extra flags to
-specify upstream repositories and such. Octopush will also help you setup keys and
-such on the first run, using `octopush setup` or `octopush server setup`.
+specify upstream repositories and such. Octopush will also help you setup keys
+and such on the first run, using `octopush setup` or `octopush server setup`.
 
 ## Contributing
 
