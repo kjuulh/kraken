@@ -13,4 +13,4 @@ eyre = { workspace = true }
 tracing = { workspace = true }
 tokio = { workspace = true }
 
-clap = { version = "4.0.18", features = ["env"] }
+clap = { version = "4.0.27", features = ["env"] }
