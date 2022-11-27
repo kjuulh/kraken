@@ -1,9 +1,0 @@
-apiVersion: git.front.kjuulh.io/kjuulh/octopush/blob/main/schema/v1
-name: write-a-readme
-select:
-  providers:
-    - gitea: https://git.front.kjuulh.io
-      organisation: "cibus"
-queries:
-  - type: grep
-    query: "releaser"
