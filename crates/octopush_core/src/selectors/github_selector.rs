@@ -32,6 +32,7 @@ impl GitHubSelector {
         git: &GitHub,
         action_path: &PathBuf,
         action: &Action,
+        dryrun: bool,
     ) -> eyre::Result<()> {
         tracing::info!("fetching repos");
         for repo in &git.repositories {
@@ -46,6 +47,10 @@ impl GitHubSelector {
             }
 
             self.executor.execute(&path, action_path, action).await?;
+
+            if dryrun {
+                return Ok(());
+            }
 
             if let Some(push) = &git.push {
                 self.git_provider

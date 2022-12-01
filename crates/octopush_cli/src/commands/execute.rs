@@ -58,6 +58,13 @@ pub fn execute_cmd() -> Command {
                 .env("GITHUB_USERNAME")
                 .required(false),
         )
+        .arg(
+            Arg::new("dry-run")
+                .long("dry-run")
+                .action(ArgAction::Set)
+                .env("OCTOPUSH_DRY_RUN")
+                .required(false),
+        )
 }
 
 pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
@@ -71,6 +78,7 @@ pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
 
     let github_http_token = args.get_one::<String>("github-api-token");
     let github_username = args.get_one::<String>("github-username");
+    let dryrun = args.get_one::<bool>("dry-run").unwrap_or(&false).clone();
 
     let service_register = ServiceRegister::new(
         LocalGitProviderOptions { http_auth: None },
@@ -107,21 +115,21 @@ pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
             if let Some(git) = &select.git {
                 service_register
                     .git_selector
-                    .run(git, &action_path, &action)
+                    .run(git, &action_path, &action, dryrun)
                     .await?;
             }
 
             if let Some(gitea) = &select.gitea {
                 service_register
                     .gitea_selector
-                    .run(gitea, &action_path, &action)
+                    .run(gitea, &action_path, &action, dryrun)
                     .await?;
             }
 
             if let Some(github) = &select.github {
                 service_register
                     .github_selector
-                    .run(github, &action_path, &action)
+                    .run(github, &action_path, &action, dryrun)
                     .await?;
             }
         }
