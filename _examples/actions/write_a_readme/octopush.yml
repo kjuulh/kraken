@@ -1,12 +1,12 @@
 apiVersion: action
 name: write-a-readme
 select:
-  github:
-    repositories:
-      - kjuulh/octopush-test
-    push:
-      pull-request:
-        name: "write a readme"
+  # github:
+  #   repositories:
+  #     - kjuulh/octopush-test
+  #   push:
+  #     pull-request:
+  #       name: "write a readme"
 
   gitea:
     repositories:
@@ -15,12 +15,12 @@ select:
       pull-request:
         name: "write a readme"
 
-  git:
-    repositories:
-      - git@git.front.kjuulh.io:kjuulh/octopush-test.git
-    push:
-      branch:
-        name: "write a readme"
+  # git:
+  #   repositories:
+  #     - git@git.front.kjuulh.io:kjuulh/octopush-test.git
+  #   push:
+  #     branch:
+  #       name: "write a readme"
 action:
   type: go
   entry: "main.go"

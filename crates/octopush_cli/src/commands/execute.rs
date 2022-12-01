@@ -63,6 +63,7 @@ pub fn execute_cmd() -> Command {
                 .long("dry-run")
                 .action(ArgAction::Set)
                 .env("OCTOPUSH_DRY_RUN")
+                .default_value("true")
                 .required(false),
         )
 }
@@ -78,7 +79,14 @@ pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
 
     let github_http_token = args.get_one::<String>("github-api-token");
     let github_username = args.get_one::<String>("github-username");
-    let dryrun = args.get_one::<bool>("dry-run").unwrap_or(&false).clone();
+    let dryrun: bool = args
+        .get_one::<String>("dry-run")
+        .ok_or(eyre::anyhow!("--dry-run is required"))?
+        .parse()?;
+
+    if dryrun {
+        tracing::info!("running in dry-run mode");
+    }
 
     let service_register = ServiceRegister::new(
         LocalGitProviderOptions { http_auth: None },

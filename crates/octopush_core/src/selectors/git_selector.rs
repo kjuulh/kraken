@@ -43,7 +43,7 @@ impl GitSelector {
             self.executor.execute(&path, action_path, action).await?;
 
             if dryrun {
-                return Ok(());
+                continue;
             }
 
             if let Some(push) = &git.push {
