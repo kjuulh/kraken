@@ -6,18 +6,21 @@ use crate::{
     executor::executor::DynExecutor,
     git::DynGitProvider,
     schema::models::{Action, Git},
+    ui::DynUI,
 };
 
 pub struct GitSelector {
     git_provider: DynGitProvider,
     executor: DynExecutor,
+    ui: DynUI,
 }
 
 impl GitSelector {
-    pub fn new(git_provider: DynGitProvider, executor: DynExecutor) -> Self {
+    pub fn new(git_provider: DynGitProvider, executor: DynExecutor, ui: DynUI) -> Self {
         Self {
             git_provider,
             executor,
+            ui,
         }
     }
 
@@ -27,6 +30,7 @@ impl GitSelector {
         action_path: &PathBuf,
         action: &Action,
         dryrun: bool,
+        interactive: bool,
     ) -> eyre::Result<()> {
         tracing::info!("fetching repos");
         for repo in &git.repositories {
@@ -44,6 +48,10 @@ impl GitSelector {
 
             if dryrun {
                 continue;
+            }
+
+            if interactive {
+                self.ui.confirm().await?;
             }
 
             if let Some(push) = &git.push {

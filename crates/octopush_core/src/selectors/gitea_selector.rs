@@ -6,12 +6,14 @@ use crate::{
     executor::executor::DynExecutor,
     git::{gitea::DynGiteaProvider, DynGitProvider},
     schema::models::{Action, Gitea},
+    ui::DynUI,
 };
 
 pub struct GiteaSelector {
     gitea_provider: DynGiteaProvider,
     git_provider: DynGitProvider,
     executor: DynExecutor,
+    ui: DynUI,
 }
 
 impl GiteaSelector {
@@ -19,11 +21,13 @@ impl GiteaSelector {
         gitea_provider: DynGiteaProvider,
         git_provider: DynGitProvider,
         executor: DynExecutor,
+        ui: DynUI,
     ) -> Self {
         Self {
             gitea_provider,
             git_provider,
             executor,
+            ui,
         }
     }
 
@@ -33,6 +37,7 @@ impl GiteaSelector {
         action_path: &PathBuf,
         action: &Action,
         dryrun: bool,
+        interactive: bool,
     ) -> eyre::Result<()> {
         tracing::info!("fetching repos");
         for repo in &git.repositories {
@@ -50,6 +55,10 @@ impl GiteaSelector {
 
             if dryrun {
                 continue;
+            }
+
+            if interactive {
+                self.ui.confirm().await?;
             }
 
             if let Some(push) = &git.push {

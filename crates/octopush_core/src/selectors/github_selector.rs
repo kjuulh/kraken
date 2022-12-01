@@ -6,12 +6,14 @@ use crate::{
     executor::executor::DynExecutor,
     git::{github::DynGitHubProvider, DynGitProvider},
     schema::models::{Action, GitHub},
+    ui::DynUI,
 };
 
 pub struct GitHubSelector {
     github_provider: DynGitHubProvider,
     git_provider: DynGitProvider,
     executor: DynExecutor,
+    ui: DynUI,
 }
 
 impl GitHubSelector {
@@ -19,11 +21,13 @@ impl GitHubSelector {
         github_provider: DynGitHubProvider,
         git_provider: DynGitProvider,
         executor: DynExecutor,
+        ui: DynUI,
     ) -> Self {
         Self {
             github_provider,
             git_provider,
             executor,
+            ui,
         }
     }
 
@@ -33,6 +37,7 @@ impl GitHubSelector {
         action_path: &PathBuf,
         action: &Action,
         dryrun: bool,
+        interactive: bool,
     ) -> eyre::Result<()> {
         tracing::info!("fetching repos");
         for repo in &git.repositories {
@@ -50,6 +55,10 @@ impl GitHubSelector {
 
             if dryrun {
                 continue;
+            }
+
+            if interactive {
+                self.ui.confirm().await?;
             }
 
             if let Some(push) = &git.push {

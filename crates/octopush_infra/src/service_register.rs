@@ -22,6 +22,7 @@ use octopush_core::{
         git_selector::GitSelector, gitea_selector::GiteaSelector, github_selector::GitHubSelector,
     },
     storage::{local::LocalStorageEngine, DynStorageEngine},
+    ui::{terminal_ui::TerminalUI, DynUI},
 };
 
 pub struct ServiceRegister {
@@ -35,6 +36,7 @@ pub struct ServiceRegister {
     pub gitea_selector: Arc<GiteaSelector>,
     pub github_provider: DynGitHubProvider,
     pub github_selector: Arc<GitHubSelector>,
+    pub ui: DynUI,
 }
 
 impl ServiceRegister {
@@ -57,11 +59,19 @@ impl ServiceRegister {
             storage_engine.clone(),
             gitea_client.clone(),
         ));
-        let git_selector = Arc::new(GitSelector::new(git_provider.clone(), executor.clone()));
+
+        let ui = Arc::new(TerminalUI::new());
+
+        let git_selector = Arc::new(GitSelector::new(
+            git_provider.clone(),
+            executor.clone(),
+            ui.clone(),
+        ));
         let gitea_selector = Arc::new(GiteaSelector::new(
             gitea_provider.clone(),
             git_provider.clone(),
             executor.clone(),
+            ui.clone(),
         ));
         let github_client = Arc::new(DefaultGitHubClient::new(&github_client_options)?);
         let github_provider = Arc::new(DefaultGitHubProvider::new(
@@ -73,6 +83,7 @@ impl ServiceRegister {
             github_provider.clone(),
             git_provider.clone(),
             executor.clone(),
+            ui.clone(),
         ));
 
         Ok(Self {
@@ -86,6 +97,7 @@ impl ServiceRegister {
             gitea_selector,
             github_provider,
             github_selector,
+            ui,
         })
     }
 

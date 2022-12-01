@@ -66,6 +66,15 @@ pub fn execute_cmd() -> Command {
                 .default_value("true")
                 .required(false),
         )
+        .arg(
+            Arg::new("interactive")
+                .long("interactive")
+                .short('i')
+                .action(ArgAction::Set)
+                .env("OCTOPUSH_INTERACTIVE")
+                .default_value("false")
+                .required(false),
+        )
 }
 
 pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
@@ -82,6 +91,11 @@ pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
     let dryrun: bool = args
         .get_one::<String>("dry-run")
         .ok_or(eyre::anyhow!("--dry-run is required"))?
+        .parse()?;
+
+    let interactive: bool = args
+        .get_one::<String>("interactive")
+        .ok_or(eyre::anyhow!("--interactive is required"))?
         .parse()?;
 
     if dryrun {
@@ -123,21 +137,21 @@ pub async fn execute_subcommand(args: &ArgMatches) -> eyre::Result<()> {
             if let Some(git) = &select.git {
                 service_register
                     .git_selector
-                    .run(git, &action_path, &action, dryrun)
+                    .run(git, &action_path, &action, dryrun, interactive)
                     .await?;
             }
 
             if let Some(gitea) = &select.gitea {
                 service_register
                     .gitea_selector
-                    .run(gitea, &action_path, &action, dryrun)
+                    .run(gitea, &action_path, &action, dryrun, interactive)
                     .await?;
             }
 
             if let Some(github) = &select.github {
                 service_register
                     .github_selector
-                    .run(github, &action_path, &action, dryrun)
+                    .run(github, &action_path, &action, dryrun, interactive)
                     .await?;
             }
         }
