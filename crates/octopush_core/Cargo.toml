@@ -15,10 +15,10 @@ tracing = { workspace = true }
 
 rand = "0.8.5"
 hex = "0.4.3"
-git2 = { version = "0.16.1", features = [
+git2 = { version = "0.17.0", features = [
   "vendored-libgit2",
   "vendored-openssl",
 ] }
-serde = { version = "1.0.158", features = ["derive"] }
+serde = { version = "1.0.159", features = ["derive"] }
 serde_yaml = "0.9.19"
 octocrab = { version = "0.19.0", features = ["futures-core", "futures-util"] }
