@@ -27,5 +27,5 @@ eyre = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 
-tracing-subscriber = { version = "0.3.16", features = ["json", "env-filter"] }
+tracing-subscriber = { version = "0.3.17", features = ["json", "env-filter"] }
 dotenv = { version = "0.15.0", features = ["clap", "cli"] }
