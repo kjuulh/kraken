@@ -21,4 +21,4 @@ git2 = { version = "0.17.1", features = [
 ] }
 serde = { version = "1.0.160", features = ["derive"] }
 serde_yaml = "0.9.21"
-octocrab = { version = "0.20.0", features = ["futures-core", "futures-util"] }
+octocrab = { version = "0.21.0", features = ["futures-core", "futures-util"] }
