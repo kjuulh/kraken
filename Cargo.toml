@@ -7,6 +7,7 @@ edition = "2021"
 
 [workspace]
 members = [
+  ".",
   "crates/octopush_cli",
   "crates/octopush_infra",
   "crates/octopush_core",

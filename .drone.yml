@@ -1,5 +1,2 @@
 kind: template
-load: bust_rustbin_default_template.yaml
-name: octopush
-data:
-  binName: octopush
+load: cuddle-rust-cli-plan.yaml
