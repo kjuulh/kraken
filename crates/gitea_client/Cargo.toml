@@ -10,4 +10,4 @@ gitea_raw_client = { path = "../gitea_raw_client" }
 
 async-trait = { workspace = true }
 
-reqwest = "0.11.17"
+reqwest = "0.12.3"
