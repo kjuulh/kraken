@@ -19,6 +19,6 @@ git2 = { version = "0.18.3", features = [
   "vendored-libgit2",
   "vendored-openssl",
 ] }
-serde = { version = "1.0.199", features = ["derive"] }
+serde = { version = "1.0.200", features = ["derive"] }
 serde_yaml = "0.9.34+deprecated"
 octocrab = { version = "0.38.0", features = ["futures-core", "futures-util"] }
